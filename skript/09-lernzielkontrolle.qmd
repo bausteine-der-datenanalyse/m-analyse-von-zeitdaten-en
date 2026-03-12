@@ -1,0 +1,41 @@
+---
+title: "9 Learning Objectives Check"
+---
+
+# 9 Learning Objectives Check
+
+Use this checklist for self-assessment.
+
+---
+
+## 9.1 Technical Competencies
+
+I can …
+
+- [ ] methodically classify a time series (measurement process, sampling rate).
+- [ ] validate a time series (sorting, duplicates, missing values).
+- [ ] apply resampling appropriately (aggregation vs. interpolation).
+- [ ] distinguish between Rolling Mean and EWMA and choose appropriately.
+- [ ] conceptually separate trend and seasonality.
+- [ ] generate and interpret lag features.
+- [ ] interpret autocorrelation.
+- [ ] define anomalies globally and locally.
+- [ ] implement baseline forecasts.
+- [ ] evaluate forecast models using MAE.
+
+---
+
+## 9.2 Comprehension Questions
+
+1. Why is the sampling rate crucial for interpreting seasonality?
+2. When is interpolation problematic?
+3. Why can a trend artificially increase autocorrelation?
+4. Why are baselines methodologically important?
+5. How does a structural break differ from an outlier?
+
+---
+
+::: {.callout-tip title="Note"}
+If several points are unclear, review the corresponding chapters
+and work on the exercises.
+:::

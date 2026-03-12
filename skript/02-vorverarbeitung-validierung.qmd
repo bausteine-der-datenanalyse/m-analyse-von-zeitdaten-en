@@ -1,0 +1,141 @@
+---
+title: "2 Preprocessing & Validation of a Time Series"
+---
+
+# 2 Preprocessing & Validation of a Time Series
+
+Before a time series is analyzed, it must be **formally correct and consistent**.
+
+Many errors in later analyses arise from:
+
+- unsorted timestamps
+- duplicate timestamps
+- missing values
+- irregular sampling
+- implicit time gaps
+
+::: {.callout-note title="Remember"}
+Time series analysis is only as good as the underlying data.
+Validation is not an optional step.
+:::
+
+## 2.1 Example Time Series with Problems
+
+We intentionally create a faulty time series (unsorted, duplicates, missing values).
+
+```{python}
+import numpy as np
+import pandas as pd
+
+rng = np.random.default_rng(1)
+
+t = pd.date_range("2025-01-01", periods=24*3, freq="h")
+y = pd.Series(10 + rng.normal(size=len(t)), index=t, name="signal")
+
+# create problems
+y = y.sample(frac=1)                      # unsorted
+y = pd.concat([y, y.iloc[5:8]])           # duplicates (append is deprecated/removed)
+y.iloc[10:15] = np.nan                    # missing values
+
+y.head()
+```
+
+## 2.2 Step 1: Ensure Sorting
+
+```{python}
+y = y.sort_index()
+```
+
+## 2.3 Step 2: Detecting and Handling Duplicates
+
+Detect duplicates:
+
+```{python}
+dup_mask = y.index.duplicated(keep=False)
+y[dup_mask].head(10)
+```
+
+Duplicates must be handled methodically, for example:
+
+- Average per timestamp (typical for measurements)
+- Keep first/last value (typical for status updates)
+- Remove (if clearly erroneous)
+
+Example: Average per timestamp
+
+```{python}
+y = y.groupby(level=0).mean()
+```
+
+## 2.4 Step 3: Analyze Missing Values
+
+```{python}
+y.isna().sum()
+```
+
+### Visualizing the Gaps
+
+```{python}
+import matplotlib.pyplot as plt
+
+y.plot(title="Time Series with Missing Values")
+plt.show()
+```
+
+### Treatment options
+
+```{python}
+y_ffill = y.ffill()
+y_interp = y.interpolate("time")
+```
+
+::: {.callout-tip title="Decision Helper"}
+- `ffill`: useful for state data ("applies until the next measurement")
+- `interpolate("time")`: useful for continuous measurements
+:::
+
+## 2.5 Step 4: Check Sampling Rate
+
+Is the time series regular?
+
+```{python}
+diffs = y.index.to_series().diff()
+diffs.value_counts().head()
+```
+
+If multiple time intervals occur → irregular sampling or time gaps.
+
+## 2.6 Making Time Gaps Explicit
+
+Using `asfreq` enforces the expected frequency.
+Missing time points appear as NaN.
+
+```{python}
+y_regular = y.asfreq("h")
+y_regular.isna().sum()
+```
+
+::: {.callout-warning title="Warning"}
+Without an explicit frequency, gaps in time may remain invisible.
+:::
+
+## 2.7 Validation Checklist
+
+Before proceeding with further analysis:
+
+- [ ] Index is a `DatetimeIndex`
+- [ ] Time series is sorted
+- [ ] Duplicates identified and properly handled
+- [ ] Missing values identified and a strategy chosen
+- [ ] Sampling rate checked
+- [ ] Frequency (if applicable) explicitly set
+
+## 2.8 Mini-Exercise
+
+Create your own time series with:
+
+- irregular sampling
+- 5 missing timestamps
+- 3 duplicates
+
+Then implement a proper validation according to the checklist.

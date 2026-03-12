@@ -1,0 +1,39 @@
+---
+title: "11 Exam Questions"
+---
+
+# 11 Exam Questions
+
+## Conceptual Questions
+
+1. Define a time series.
+2. What is the difference between aggregation and interpolation?
+3. Explain rolling mean and EWMA conceptually.
+4. What is a lag feature?
+5. What does autocorrelation measure?
+6. Why can a trend affect autocorrelation?
+7. Explain the difference between global and local anomaly detection.
+8. What is a forecast baseline?
+9. Why are baselines methodologically necessary?
+10. What does MAE measure?
+
+---
+
+## Application Questions
+
+1. You receive machine data with a strong weekly pattern.
+   - What steps would you take?
+
+2. A time series suddenly shows permanently higher values.
+   - Outlier or structural break? Justify your answer.
+
+3. Two time series need to be compared,
+   one measured every minute, the other hourly.
+   - What steps are necessary?
+
+---
+
+::: {.callout-warning title="Exam Preparation Note"}
+Always justify your answers methodologically.
+Pure definitions are usually not sufficient.
+:::

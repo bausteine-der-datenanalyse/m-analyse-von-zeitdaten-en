@@ -1,0 +1,16 @@
+project:  
+  output-dir: output/book/
+book:
+  chapters: 
+    - index.qmd
+    - skript/01-einleitung.qmd 
+    - skript/02-vorverarbeitung-validierung.qmd 
+    - skript/03-resampling-alignment.qmd 
+    - skript/04-glaettung.qmd 
+    - skript/05-trend-saison.qmd 
+    - skript/06-lags-autokorrelation.qmd 
+    - skript/07-anomalien.qmd 
+    - skript/08-forecasting-baselines.qmd 
+    - skript/09-lernzielkontrolle.qmd 
+    - skript/10-uebung.qmd 
+    - skript/11-klausurfragen.qmd

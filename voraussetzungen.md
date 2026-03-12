@@ -1,0 +1,4 @@
+- Python Basics
+- NumPy (Arrays, basic operations)
+- Matplotlib (Visualization)
+- Basic understanding of Pandas (Series, DataFrame)

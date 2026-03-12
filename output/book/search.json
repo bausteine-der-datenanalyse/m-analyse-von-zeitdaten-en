@@ -1,0 +1,1222 @@
+[
+  {
+    "objectID": "skript/01-einleitung.html",
+    "href": "skript/01-einleitung.html",
+    "title": "1  1 Classification: Time Series as a Measurement Process",
+    "section": "",
+    "text": "2 1 Classification: Time Series as a Measurement Process\nA time series is the result of a measurement process over time.\nTypical examples:\nWhat matters is not only the numerical value itself, but also:",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>1 Classification: Time Series as a Measurement Process</span>"
+    ]
+  },
+  {
+    "objectID": "skript/01-einleitung.html#creating-a-working-dataset",
+    "href": "skript/01-einleitung.html#creating-a-working-dataset",
+    "title": "1  1 Classification: Time Series as a Measurement Process",
+    "section": "2.1 1.1 Creating a Working Dataset",
+    "text": "2.1 1.1 Creating a Working Dataset\nWe create a synthetic time series with:\n\nTrend\n\nDaily periodicity\n\nNoise\n\nOutliers\n\nThis structure is typical for real-world technical measurement data.\n\nPandas (recommended)NumPy (Principle)\n\n\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(42)\n\n# Time index: 14 days, hourly measurements\nt = pd.date_range(\"2025-01-01\", periods=24*14, freq=\"H\")\n\ntrend = np.linspace(0, 3, len(t))\nseason = 0.8 * np.sin(2*np.pi*(t.hour)/24)\nnoise = 0.25 * rng.normal(size=len(t))\n\ny = 10 + trend + season + noise\ny = pd.Series(y, index=t, name=\"signal\")\n\n# artificial outliers\ny.iloc[50] += 3.5\ny.iloc[120] -= 2.8\n\ny.plot()\nplt.title(\"Time Series (Trend + Seasonality + Noise)\")\nplt.xlabel(\"Time\")\nplt.ylabel(\"Value\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_16808\\2892507849.py:8: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.\n\n\n\n\n\n\n\n\n\n\n\n\nHere we model time as a simple sample index.\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(42)\n\nn = 24*14\nx = np.arange(n)\n\ntrend = np.linspace(0, 3, n)\nseason = 0.8 * np.sin(2*np.pi*(x % 24)/24)\nnoise = 0.25 * rng.normal(size=n)\n\ny = 10 + trend + season + noise\n\n# Outliers\ny[50] += 3.5\ny[120] -= 2.8\n\nplt.plot(y)\nplt.title(\"Time series (NumPy, without time index)\")\nplt.xlabel(\"Sample\")\nplt.ylabel(\"Value\")\nplt.show()",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>1 Classification: Time Series as a Measurement Process</span>"
+    ]
+  },
+  {
+    "objectID": "skript/01-einleitung.html#typical-analysis-questions",
+    "href": "skript/01-einleitung.html#typical-analysis-questions",
+    "title": "1  1 Classification: Time Series as a Measurement Process",
+    "section": "2.2 1.2 Typical Analysis Questions",
+    "text": "2.2 1.2 Typical Analysis Questions\nIn time series analysis, similar questions arise repeatedly:\n\nIs there a trend?\nDoes a periodicity exist (e.g., daily or weekly patterns)?\nHow strong is the noise?\nAre there anomalies?\nHow can future values be roughly estimated?\n\n\n\n\n\n\n\nMethodological Perspective\n\n\n\nBefore smoothing or modeling:\n\nVisualize\n\nCheck the time scale\n\nIdentify the structure\n\nOnly then continue with further analysis",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>1 Classification: Time Series as a Measurement Process</span>"
+    ]
+  },
+  {
+    "objectID": "skript/01-einleitung.html#structural-model-of-a-time-series",
+    "href": "skript/01-einleitung.html#structural-model-of-a-time-series",
+    "title": "1  1 Classification: Time Series as a Measurement Process",
+    "section": "2.3 1.3 Structural Model of a Time Series",
+    "text": "2.3 1.3 Structural Model of a Time Series\nA time series can often be conceptually represented as:\nSignal = Trend + Seasonality + Noise + Outliers\nThis decomposition is not a physical law, but rather a conceptual model that helps analyze patterns systematically.\n\n\n\n\n\n\nAttention\n\n\n\nNot every recurring pattern is automatically “seasonality”.\nRegularity must plausibly match the sampling rate and the underlying process.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>1 Classification: Time Series as a Measurement Process</span>"
+    ]
+  },
+  {
+    "objectID": "skript/01-einleitung.html#mini-reflection",
+    "href": "skript/01-einleitung.html#mini-reflection",
+    "title": "1  1 Classification: Time Series as a Measurement Process",
+    "section": "2.4 1.4 Mini Reflection",
+    "text": "2.4 1.4 Mini Reflection\nAnswer the following:\n\nWhich periodicity was modeled here?\nWhat role does the sampling rate play?\nWould daily aggregation make the seasonal component visible or invisible?\nHow would outliers behave under strong smoothing?\n\nThese questions will accompany us throughout the entire methods module.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>1 Classification: Time Series as a Measurement Process</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html",
+    "href": "skript/02-vorverarbeitung-validierung.html",
+    "title": "2  2 Preprocessing & Validation of a Time Series",
+    "section": "",
+    "text": "3 2 Preprocessing & Validation of a Time Series\nBefore a time series is analyzed, it must be formally correct and consistent.\nMany errors in later analyses arise from:",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Preprocessing & Validation of a Time Series</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#beispiel-zeitreihe-mit-problemen",
+    "href": "skript/02-vorverarbeitung-validierung.html#beispiel-zeitreihe-mit-problemen",
+    "title": "2  2 Vorverarbeitung & Validierung einer Zeitreihe",
+    "section": "3.1 2.1 Beispiel-Zeitreihe mit Problemen",
+    "text": "3.1 2.1 Beispiel-Zeitreihe mit Problemen\nWir erzeugen bewusst eine fehlerhafte Zeitreihe (unsortiert, Duplikate, Missing Values).\n\nimport numpy as np\nimport pandas as pd\n\nrng = np.random.default_rng(1)\n\nt = pd.date_range(\"2025-01-01\", periods=24*3, freq=\"h\")\ny = pd.Series(10 + rng.normal(size=len(t)), index=t, name=\"signal\")\n\n# Probleme erzeugen\ny = y.sample(frac=1)                      # unsortiert\ny = pd.concat([y, y.iloc[5:8]])           # Duplikate (append ist deprecated/entfernt)\ny.iloc[10:15] = np.nan                    # fehlende Werte\n\ny.head()\n\n2025-01-02 23:00:00     9.493708\n2025-01-01 15:00:00    10.598846\n2025-01-02 15:00:00    10.109014\n2025-01-01 16:00:00    10.039722\n2025-01-02 22:00:00    10.035586\nName: signal, dtype: float64",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Vorverarbeitung & Validierung einer Zeitreihe</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#schritt-1-sortierung-sicherstellen",
+    "href": "skript/02-vorverarbeitung-validierung.html#schritt-1-sortierung-sicherstellen",
+    "title": "2  2 Vorverarbeitung & Validierung einer Zeitreihe",
+    "section": "3.2 2.2 Schritt 1: Sortierung sicherstellen",
+    "text": "3.2 2.2 Schritt 1: Sortierung sicherstellen\n\ny = y.sort_index()",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Vorverarbeitung & Validierung einer Zeitreihe</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#schritt-2-duplikate-erkennen-und-behandeln",
+    "href": "skript/02-vorverarbeitung-validierung.html#schritt-2-duplikate-erkennen-und-behandeln",
+    "title": "2  2 Vorverarbeitung & Validierung einer Zeitreihe",
+    "section": "3.3 2.3 Schritt 2: Duplikate erkennen und behandeln",
+    "text": "3.3 2.3 Schritt 2: Duplikate erkennen und behandeln\nDuplikate erkennen:\n\ndup_mask = y.index.duplicated(keep=False)\ny[dup_mask].head(10)\n\n2025-01-01 21:00:00     9.724397\n2025-01-01 21:00:00     9.724397\n2025-01-01 22:00:00    11.294064\n2025-01-01 22:00:00    11.294064\n2025-01-03 19:00:00    10.759520\n2025-01-03 19:00:00    10.759520\nName: signal, dtype: float64\n\n\nDuplikate müssen methodisch entschieden behandelt werden, z. B.:\n\nMittelwert pro Zeitstempel (typisch bei Messwerten)\nersten/letzten Wert behalten (typisch bei Status-Updates)\nentfernen (wenn klar fehlerhaft)\n\nBeispiel: Mittelwert pro Zeitstempel\n\ny = y.groupby(level=0).mean()",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Vorverarbeitung & Validierung einer Zeitreihe</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#schritt-3-fehlende-werte-analysieren",
+    "href": "skript/02-vorverarbeitung-validierung.html#schritt-3-fehlende-werte-analysieren",
+    "title": "2  2 Vorverarbeitung & Validierung einer Zeitreihe",
+    "section": "3.4 2.4 Schritt 3: Fehlende Werte analysieren",
+    "text": "3.4 2.4 Schritt 3: Fehlende Werte analysieren\n\ny.isna().sum()\n\nnp.int64(5)\n\n\n\n3.4.1 Visualisierung der Lücken\n\nimport matplotlib.pyplot as plt\n\ny.plot(title=\"Zeitreihe mit Missing Values\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n3.4.2 Behandlungsmöglichkeiten\n\ny_ffill = y.ffill()\ny_interp = y.interpolate(\"time\")\n\n\n\n\n\n\n\nEntscheidungshilfe\n\n\n\n\nffill: sinnvoll bei Zustandsdaten („gilt bis zur nächsten Messung“)\ninterpolate(\"time\"): sinnvoll bei kontinuierlichen Messgrößen",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Vorverarbeitung & Validierung einer Zeitreihe</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#schritt-4-abtastrate-prüfen",
+    "href": "skript/02-vorverarbeitung-validierung.html#schritt-4-abtastrate-prüfen",
+    "title": "2  2 Vorverarbeitung & Validierung einer Zeitreihe",
+    "section": "3.5 2.5 Schritt 4: Abtastrate prüfen",
+    "text": "3.5 2.5 Schritt 4: Abtastrate prüfen\nIst die Zeitreihe regelmäßig?\n\ndiffs = y.index.to_series().diff()\ndiffs.value_counts().head()\n\n0 days 01:00:00    71\nName: count, dtype: int64\n\n\nWenn mehrere Zeitabstände auftreten → unregelmäßige Abtastung oder Zeitlücken.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Vorverarbeitung & Validierung einer Zeitreihe</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#zeitlücken-explizit-machen",
+    "href": "skript/02-vorverarbeitung-validierung.html#zeitlücken-explizit-machen",
+    "title": "2  2 Vorverarbeitung & Validierung einer Zeitreihe",
+    "section": "3.6 2.6 Zeitlücken explizit machen",
+    "text": "3.6 2.6 Zeitlücken explizit machen\nMit asfreq wird die erwartete Frequenz erzwungen. Fehlende Zeitpunkte werden als NaN sichtbar.\n\ny_regular = y.asfreq(\"h\")\ny_regular.isna().sum()\n\nnp.int64(5)\n\n\n\n\n\n\n\n\nAchtung\n\n\n\nOhne explizite Frequenz können Zeitlücken unsichtbar bleiben.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Vorverarbeitung & Validierung einer Zeitreihe</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#validierungs-checkliste",
+    "href": "skript/02-vorverarbeitung-validierung.html#validierungs-checkliste",
+    "title": "2  2 Vorverarbeitung & Validierung einer Zeitreihe",
+    "section": "3.7 2.7 Validierungs-Checkliste",
+    "text": "3.7 2.7 Validierungs-Checkliste\nBevor Sie weiter analysieren:\n\nIndex ist DatetimeIndex\nZeitreihe ist sortiert\nDuplikate identifiziert und begründet behandelt\nFehlende Werte identifiziert und Strategie gewählt\nAbtastrate geprüft\nFrequenz (falls sinnvoll) explizit gesetzt",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Vorverarbeitung & Validierung einer Zeitreihe</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#mini-aufgabe",
+    "href": "skript/02-vorverarbeitung-validierung.html#mini-aufgabe",
+    "title": "2  2 Vorverarbeitung & Validierung einer Zeitreihe",
+    "section": "3.8 2.8 Mini-Aufgabe",
+    "text": "3.8 2.8 Mini-Aufgabe\nErzeugen Sie selbst eine Zeitreihe mit:\n\nunregelmäßiger Abtastung\n5 fehlenden Zeitpunkten\n3 Duplikaten\n\nImplementieren Sie anschließend eine saubere Validierung gemäß Checkliste.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Vorverarbeitung & Validierung einer Zeitreihe</span>"
+    ]
+  },
+  {
+    "objectID": "skript/03-resampling-alignment.html",
+    "href": "skript/03-resampling-alignment.html",
+    "title": "3  3 Resampling & Alignment",
+    "section": "",
+    "text": "4 3 Resampling & Alignment\nTime series often come at different sampling rates or need to be transformed to a different time scale.\nCommon reasons:",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>3 Resampling & Alignment</span>"
+    ]
+  },
+  {
+    "objectID": "skript/03-resampling-alignment.html#ausgangszeitreihe-stündlich",
+    "href": "skript/03-resampling-alignment.html#ausgangszeitreihe-stündlich",
+    "title": "3  3 Resampling & Alignment",
+    "section": "4.1 3.1 Ausgangszeitreihe (stündlich)",
+    "text": "4.1 3.1 Ausgangszeitreihe (stündlich)\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(2)\n\nt = pd.date_range(\"2025-01-01\", periods=24*5, freq=\"H\")\ny = pd.Series(10 + rng.normal(size=len(t)), index=t, name=\"signal\")\n\ny.plot(title=\"Stündliche Zeitreihe\")\nplt.show()\n\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19306/2493709333.py:7: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  t = pd.date_range(\"2025-01-01\", periods=24*5, freq=\"H\")",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>3 Resampling & Alignment</span>"
+    ]
+  },
+  {
+    "objectID": "skript/03-resampling-alignment.html#downsampling-aggregation",
+    "href": "skript/03-resampling-alignment.html#downsampling-aggregation",
+    "title": "3  3 Resampling & Alignment",
+    "section": "4.2 3.2 Downsampling (Aggregation)",
+    "text": "4.2 3.2 Downsampling (Aggregation)\nWe aggregate from hours to days.\n\ndaily_mean = y.resample(\"D\").mean()\ndaily_max = y.resample(\"D\").max()\n\nax = daily_mean.plot(marker=\"o\", label=\"Daily Mean\")\ndaily_max.plot(ax=ax, marker=\"o\", label=\"Daily Maximum\")\nplt.legend()\nplt.title(\"Downsampling: Hours → Days\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDecision Guide\n\n\n\n\nMean → smooths out fluctuations\n\nMaximum → highlights extreme values\n\nSum → useful for quantities (e.g., energy consumption)",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>3 Resampling & Alignment</span>"
+    ]
+  },
+  {
+    "objectID": "skript/03-resampling-alignment.html#upsampling-interpolation",
+    "href": "skript/03-resampling-alignment.html#upsampling-interpolation",
+    "title": "3  3 Resampling & Alignment",
+    "section": "4.3 3.3 Upsampling (Interpolation)",
+    "text": "4.3 3.3 Upsampling (Interpolation)\nWe increase the temporal resolution.\n\ny_2h = y.resample(\"2H\").mean()\ny_up = y_2h.resample(\"H\").interpolate(\"time\")\n\nax = y_2h.plot(marker=\"o\", label=\"2H (aggregated)\")\ny_up.plot(ax=ax, alpha=0.7, label=\"Interpolated to 1H\")\nplt.legend()\nplt.title(\"Upsampling with Interpolation\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_17708\\2056401537.py:1: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_17708\\2056401537.py:2: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nWarning\n\n\n\nInterpolation does not generate new measurement data; it only models a plausible progression.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>3 Resampling & Alignment</span>"
+    ]
+  },
+  {
+    "objectID": "skript/03-resampling-alignment.html#alignment-zweier-zeitreihen",
+    "href": "skript/03-resampling-alignment.html#alignment-zweier-zeitreihen",
+    "title": "3  3 Resampling & Alignment",
+    "section": "4.4 3.4 Alignment zweier Zeitreihen",
+    "text": "4.4 3.4 Alignment zweier Zeitreihen\nZwei Zeitreihen mit unterschiedlicher Abtastrate:\n\nt2 = pd.date_range(\"2025-01-01\", periods=24*5, freq=\"2H\")\ny2 = pd.Series(5 + rng.normal(size=len(t2)), index=t2, name=\"signal2\")\n\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19306/3177252539.py:1: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  t2 = pd.date_range(\"2025-01-01\", periods=24*5, freq=\"2H\")\n\n\nZur gemeinsamen Analyse müssen beide Reihen dieselbe Frequenz haben.\n\ny2_aligned = y2.resample(\"H\").interpolate(\"time\")\n\ndf = pd.concat([y, y2_aligned], axis=1)\n\ndf.plot(title=\"Aligned Time Series\")\nplt.show()\n\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19306/1233815767.py:1: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  y2_aligned = y2.resample(\"H\").interpolate(\"time\")\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMerke\n\n\n\nAlignment bedeutet: - gleiche Frequenz - gleicher Zeitbereich - gleiche Zeitzone",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>3 Resampling & Alignment</span>"
+    ]
+  },
+  {
+    "objectID": "skript/03-resampling-alignment.html#häufige-fehlerquellen",
+    "href": "skript/03-resampling-alignment.html#häufige-fehlerquellen",
+    "title": "3  3 Resampling & Alignment",
+    "section": "4.5 3.5 Häufige Fehlerquellen",
+    "text": "4.5 3.5 Häufige Fehlerquellen\n\nVergleiche ohne vorheriges Resampling\nMischung von lokaler Zeit und UTC\nAggregation ohne Berücksichtigung der Datentypen (z. B. Summe vs Mittelwert)",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>3 Resampling & Alignment</span>"
+    ]
+  },
+  {
+    "objectID": "skript/03-resampling-alignment.html#mini-aufgabe",
+    "href": "skript/03-resampling-alignment.html#mini-aufgabe",
+    "title": "3  3 Resampling & Alignment",
+    "section": "4.6 3.6 Mini-Aufgabe",
+    "text": "4.6 3.6 Mini-Aufgabe\n\nErzeugen Sie eine minütliche Zeitreihe über 2 Tage.\nAggregieren Sie auf Stundenmittel.\nVergleichen Sie visuell:\n\nOriginal\nStundenmittel\n\nInterpretieren Sie den Informationsverlust.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>3 Resampling & Alignment</span>"
+    ]
+  },
+  {
+    "objectID": "skript/04-glaettung.html",
+    "href": "skript/04-glaettung.html",
+    "title": "4  4 Smoothing & Noise Reduction",
+    "section": "",
+    "text": "5 4 Smoothing & Noise Reduction\nSmoothing is one of the most important standard techniques in time series analysis.\nIt helps to:",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>4 Smoothing & Noise Reduction</span>"
+    ]
+  },
+  {
+    "objectID": "skript/04-glaettung.html#beispielsignal",
+    "href": "skript/04-glaettung.html#beispielsignal",
+    "title": "4  4 Glättung & Rauschreduktion",
+    "section": "5.1 4.1 Beispielsignal",
+    "text": "5.1 4.1 Beispielsignal\nWir nutzen eine Zeitreihe mit Tagesmuster, Rauschen und einzelnen Ausreißern.\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(42)\n\nt = pd.date_range(\"2025-01-01\", periods=24*10, freq=\"H\")  # 10 Tage stündlich\ntrend = np.linspace(0, 2, len(t))\nseason = 0.9 * np.sin(2*np.pi*(t.hour)/24)\nnoise = 0.35 * rng.normal(size=len(t))\n\ns = pd.Series(10 + trend + season + noise, index=t, name=\"signal\")\n\n# Ausreißer\ns.iloc[30] += 3.0\ns.iloc[120] -= 2.5\n\ns.plot(title=\"Beispielsignal (roh)\")\nplt.show()\n\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19328/3372949856.py:7: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  t = pd.date_range(\"2025-01-01\", periods=24*10, freq=\"H\")  # 10 Tage stündlich",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>4 Glättung & Rauschreduktion</span>"
+    ]
+  },
+  {
+    "objectID": "skript/04-glaettung.html#rolling-mean-gleitender-mittelwert",
+    "href": "skript/04-glaettung.html#rolling-mean-gleitender-mittelwert",
+    "title": "4  4 Glättung & Rauschreduktion",
+    "section": "5.2 4.2 Rolling Mean (gleitender Mittelwert)",
+    "text": "5.2 4.2 Rolling Mean (gleitender Mittelwert)\nRolling Mean ist die klassische Glättung: Mittelwert über ein Fenster.\n\nPandas (empfohlen)NumPy (Prinzip)\n\n\n\nroll_6h = s.rolling(\"6H\").mean()\nroll_24h = s.rolling(\"24H\").mean()\n\nax = s.plot(alpha=0.45, label=\"Signal\")\nroll_6h.plot(ax=ax, label=\"Rolling 6H\")\nroll_24h.plot(ax=ax, label=\"Rolling 24H\")\nplt.legend()\nplt.title(\"Rolling Mean (Pandas)\")\nplt.show()\n\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19328/1470441625.py:1: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  roll_6h = s.rolling(\"6H\").mean()\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19328/1470441625.py:2: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  roll_24h = s.rolling(\"24H\").mean()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nEntscheidungshilfe\n\n\n\n\n6H: reduziert kurzfristiges Rauschen, Ereignisse bleiben sichtbar\n\n24H: zeigt eher Grundniveau/Trend, dämpft Tagesmuster stark\n\n\n\n\n\n\nNumPy-Variante: Moving Average als Faltung (convolve).\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\ny = s.to_numpy()\n\ndef moving_average(y, window):\n    kernel = np.ones(window) / window\n    return np.convolve(y, kernel, mode=\"same\")\n\nma_6 = moving_average(y, 6)\nma_24 = moving_average(y, 24)\n\nplt.plot(y, alpha=0.45, label=\"Signal\")\nplt.plot(ma_6, label=\"MA 6 Samples\")\nplt.plot(ma_24, label=\"MA 24 Samples\")\nplt.legend()\nplt.title(\"Moving Average (NumPy)\")\nplt.xlabel(\"Sample\")\nplt.ylabel(\"Wert\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAchtung\n\n\n\nBei der Faltung müssen Sie Randbehandlung bewusst akzeptieren (hier: mode=\"same\"). Pandas behandelt Randbereiche konsistent mit min_periods und NaNs.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>4 Glättung & Rauschreduktion</span>"
+    ]
+  },
+  {
+    "objectID": "skript/04-glaettung.html#ewma-exponentially-weighted-moving-average",
+    "href": "skript/04-glaettung.html#ewma-exponentially-weighted-moving-average",
+    "title": "4  4 Smoothing & Noise Reduction",
+    "section": "5.3 4.3 EWMA (Exponentially Weighted Moving Average)",
+    "text": "5.3 4.3 EWMA (Exponentially Weighted Moving Average)\nEWMA smooths, but weights newer values more heavily.\n\nPandas (recommended)NumPy (Concept)\n\n\n\newm_fast = s.ewm(span=6, adjust=False).mean()\newm_slow = s.ewm(span=24, adjust=False).mean()\n\nax = s.plot(alpha=0.45, label=\"Signal\")\newm_fast.plot(ax=ax, label=\"EWMA span=6\")\newm_slow.plot(ax=ax, label=\"EWMA span=24\")\nplt.legend()\nplt.title(\"EWMA (Pandas)\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nEWMA reacts faster to changes than a rolling mean, because older values have exponentially less influence.\n\n\n\n\nEWMA can be calculated recursively:\n[ m_t = y_t + (1-)m_{t-1} ]\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\ny = s.to_numpy()\n\ndef ewma(y, alpha):\n    m = np.empty_like(y, dtype=float)\n    m[0] = y[0]\n    for i in range(1, len(y)):\n        m[i] = alpha * y[i] + (1 - alpha) * m[i-1]\n    return m\n\nm_fast = ewma(y, alpha=0.30)\nm_slow = ewma(y, alpha=0.08)\n\nplt.plot(y, alpha=0.45, label=\"Signal\")\nplt.plot(m_fast, label=\"EWMA alpha=0.30\")\nplt.plot(m_slow, label=\"EWMA alpha=0.08\")\nplt.legend()\nplt.title(\"EWMA (NumPy)\")\nplt.xlabel(\"Sample\")\nplt.ylabel(\"Value\")\nplt.show()",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>4 Smoothing & Noise Reduction</span>"
+    ]
+  },
+  {
+    "objectID": "skript/04-glaettung.html#methodische-wahl-welches-verfahren-wann",
+    "href": "skript/04-glaettung.html#methodische-wahl-welches-verfahren-wann",
+    "title": "4  4 Glättung & Rauschreduktion",
+    "section": "5.4 4.4 Methodische Wahl: welches Verfahren wann?",
+    "text": "5.4 4.4 Methodische Wahl: welches Verfahren wann?\n\n\n\n\n\n\nEntscheidungshilfe\n\n\n\nRolling Mean eignet sich gut, wenn…\n- Sie ein klar definiertes Zeitfenster mitteln wollen (z. B. „letzte 24h“).\nEWMA eignet sich gut, wenn…\n- Sie eine smoothe Baseline wollen, die schneller auf Änderungen reagiert.\n- Sie Anomalien als Abweichung von einer dynamischen Baseline erkennen möchten.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>4 Glättung & Rauschreduktion</span>"
+    ]
+  },
+  {
+    "objectID": "skript/04-glaettung.html#mini-aufgaben",
+    "href": "skript/04-glaettung.html#mini-aufgaben",
+    "title": "4  4 Glättung & Rauschreduktion",
+    "section": "5.5 4.5 Mini-Aufgaben",
+    "text": "5.5 4.5 Mini-Aufgaben\n\nFensterwahl: Testen Sie Rolling-Fenster von 3H, 12H, 48H.\n\nWelche Strukturen werden jeweils sichtbar bzw. verschwinden?\n\nAnomalien & Glättung: Erhöhen Sie die Ausreißer-Amplitude.\n\nAb welcher Glättungsstärke „verschwindet“ der Ausreißer im geglätteten Signal?\n\nEWMA-Empfindlichkeit: Variieren Sie span (Pandas) bzw. alpha (NumPy).\n\nWelche Parameter reagieren „schnell“, welche „träge“? Begründen Sie.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>4 Glättung & Rauschreduktion</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html",
+    "href": "skript/05-trend-saison.html",
+    "title": "5  5 Trend & Season",
+    "section": "",
+    "text": "6 5 Trend & Season\nMany time series contain systematic structures:\nThis decomposition is a conceptual model that helps to systematically analyze structure.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Season</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#beispielsignal",
+    "href": "skript/05-trend-saison.html#beispielsignal",
+    "title": "5  5 Trend & Saison",
+    "section": "6.1 5.1 Beispielsignal",
+    "text": "6.1 5.1 Beispielsignal\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(10)\n\nt = pd.date_range(\"2025-01-01\", periods=24*14, freq=\"H\")\ntrend = np.linspace(0, 4, len(t))\nseason = 1.2 * np.sin(2*np.pi*(t.hour)/24)\nnoise = 0.4 * rng.normal(size=len(t))\n\ns = pd.Series(20 + trend + season + noise, index=t, name=\"signal\")\n\ns.plot(title=\"Signal mit Trend und Tages-Saison\")\nplt.show()\n\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19353/1321060591.py:7: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  t = pd.date_range(\"2025-01-01\", periods=24*14, freq=\"H\")",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Saison</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#saison-sichtbar-machen",
+    "href": "skript/05-trend-saison.html#saison-sichtbar-machen",
+    "title": "5  5 Trend & Saison",
+    "section": "6.2 5.2 Saison sichtbar machen",
+    "text": "6.2 5.2 Saison sichtbar machen\n\n6.2.1 Mittelwert pro Stunde\n\nseason_hour = s.groupby(s.index.hour).mean()\n\nseason_hour.plot(marker=\"o\")\nplt.title(\"Durchschnittlicher Tagesverlauf (0–23h)\")\nplt.xlabel(\"Stunde\")\nplt.ylabel(\"Mittelwert\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nInterpretation\n\n\n\nEin periodisches Muster in dieser Darstellung deutet auf Tages-Saison hin.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Saison</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#trend-schätzen-starke-glättung",
+    "href": "skript/05-trend-saison.html#trend-schätzen-starke-glättung",
+    "title": "5  5 Trend & Saison",
+    "section": "6.3 5.3 Trend schätzen (starke Glättung)",
+    "text": "6.3 5.3 Trend schätzen (starke Glättung)\n\nPandasNumPy (Prinzip)\n\n\n\ntrend_est = s.rolling(\"72H\").mean()\n\nax = s.plot(alpha=0.4, label=\"Signal\")\ntrend_est.plot(ax=ax, linewidth=2, label=\"Trend (Rolling 72H)\")\nplt.legend()\nplt.title(\"Trend-Schätzung\")\nplt.show()\n\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19353/1951088130.py:1: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  trend_est = s.rolling(\"72H\").mean()\n\n\n\n\n\n\n\n\n\n\n\n\nimport numpy as np\n\ny = s.to_numpy()\n\ndef moving_average(y, window):\n    kernel = np.ones(window) / window\n    return np.convolve(y, kernel, mode=\"same\")\n\ntrend_np = moving_average(y, 72)\n\nplt.plot(y, alpha=0.4, label=\"Signal\")\nplt.plot(trend_np, linewidth=2, label=\"Trend (MA 72)\")\nplt.legend()\nplt.title(\"Trend-Schätzung (NumPy)\")\nplt.show()",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Saison</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#residuum-berechnen-vereinfachte-zerlegung",
+    "href": "skript/05-trend-saison.html#residuum-berechnen-vereinfachte-zerlegung",
+    "title": "5  5 Trend & Saison",
+    "section": "6.4 5.4 Residuum berechnen (vereinfachte Zerlegung)",
+    "text": "6.4 5.4 Residuum berechnen (vereinfachte Zerlegung)\nWir entfernen Trend und Saison grob:\n\nseason_map = s.index.hour.map(season_hour)\nresidual = s - trend_est - season_map\n\nresidual.plot(title=\"Residuum (vereinfachte Zerlegung)\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAchtung\n\n\n\nDiese Zerlegung ist didaktisch vereinfacht. In der Praxis existieren robustere Verfahren (z. B. STL). Hier geht es um das Prinzip.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Saison</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#additives-vs-multiplikatives-modell",
+    "href": "skript/05-trend-saison.html#additives-vs-multiplikatives-modell",
+    "title": "5  5 Trend & Saison",
+    "section": "6.5 5.5 Additives vs Multiplikatives Modell",
+    "text": "6.5 5.5 Additives vs Multiplikatives Modell\nAdditives Modell:\nSignal = Trend + Saison + Rauschen\nMultiplikatives Modell:\nSignal = Trend × Saison × Rauschen\nMultiplikative Modelle sind sinnvoll, wenn die Amplitude der Saison mit dem Niveau wächst.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Saison</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#mini-aufgaben",
+    "href": "skript/05-trend-saison.html#mini-aufgaben",
+    "title": "5  5 Trend & Saison",
+    "section": "6.6 5.6 Mini-Aufgaben",
+    "text": "6.6 5.6 Mini-Aufgaben\n\nErhöhen Sie die Trendsteigung.\n\nWie beeinflusst das die Erkennung der Saison?\n\nErzeugen Sie eine Wochen-Saison (Periodenlänge 7 Tage).\n\nWie würden Sie diese sichtbar machen?\n\nTesten Sie ein sehr großes Rolling-Fenster (z. B. 120H).\n\nWelche Struktur bleibt übrig?",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Saison</span>"
+    ]
+  },
+  {
+    "objectID": "skript/06-lags-autokorrelation.html",
+    "href": "skript/06-lags-autokorrelation.html",
+    "title": "6  6 Lags & Autocorrelation",
+    "section": "",
+    "text": "7 6 Lags & Autocorrelation\nTime series differ from classical datasets because observations are not independent.\nThe value at time t often depends on previous values.\nWe examine this temporal dependence using:",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>6 Lags & Autocorrelation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/06-lags-autokorrelation.html#beispielsignal",
+    "href": "skript/06-lags-autokorrelation.html#beispielsignal",
+    "title": "6  6 Lags & Autokorrelation",
+    "section": "7.1 6.1 Beispielsignal",
+    "text": "7.1 6.1 Beispielsignal\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(21)\n\nt = pd.date_range(\"2025-01-01\", periods=24*14, freq=\"H\")\ntrend = np.linspace(0, 2, len(t))\nseason = 0.8 * np.sin(2*np.pi*(t.hour)/24)\nnoise = 0.4 * rng.normal(size=len(t))\n\ns = pd.Series(15 + trend + season + noise, index=t, name=\"signal\")\n\ns.plot(title=\"Beispielsignal\")\nplt.show()\n\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19379/1570465617.py:7: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  t = pd.date_range(\"2025-01-01\", periods=24*14, freq=\"H\")",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>6 Lags & Autokorrelation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/06-lags-autokorrelation.html#lag-features",
+    "href": "skript/06-lags-autokorrelation.html#lag-features",
+    "title": "6  6 Lags & Autocorrelation",
+    "section": "7.2 6.2 Lag Features",
+    "text": "7.2 6.2 Lag Features\nA lag shifts the time series backward.\n\nPandasNumPy (Concept)\n\n\n\nlag_1h = s.shift(1)\nlag_24h = s.shift(24)\n\ndf_lags = pd.DataFrame({\n    \"y\": s,\n    \"lag_1h\": lag_1h,\n    \"lag_24h\": lag_24h\n})\n\ndf_lags.head()\n\n\n\n\n\n\n\n\ny\nlag_1h\nlag_24h\n\n\n\n\n2025-01-01 00:00:00\n15.143509\nNaN\nNaN\n\n\n2025-01-01 01:00:00\n15.817296\n15.143509\nNaN\n\n\n2025-01-01 02:00:00\n14.697408\n15.817296\nNaN\n\n\n2025-01-01 03:00:00\n16.258241\n14.697408\nNaN\n\n\n2025-01-01 04:00:00\n15.697774\n16.258241\nNaN\n\n\n\n\n\n\n\n\n\n\ny = s.to_numpy()\n\nlag1 = np.roll(y, 1)\nlag24 = np.roll(y, 24)\n\nlag1[0] = np.nan\nlag24[:24] = np.nan\n\n\n\n\n\n\n\n\n\n\n\nInterpretation\n\n\n\nA high correlation between y(t) and y(t-24) indicates a daily periodicity.",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>6 Lags & Autocorrelation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/06-lags-autokorrelation.html#autokorrelation-berechnen",
+    "href": "skript/06-lags-autokorrelation.html#autokorrelation-berechnen",
+    "title": "6  6 Lags & Autokorrelation",
+    "section": "7.3 6.3 Autokorrelation berechnen",
+    "text": "7.3 6.3 Autokorrelation berechnen\nAutokorrelation misst die Korrelation zwischen y(t) und y(t-k).\n\nPandasNumPy (Prinzip)\n\n\n\nlags = range(1, 49)\nac = [s.corr(s.shift(k)) for k in lags]\n\nplt.stem(list(lags), ac)\nplt.title(\"Autokorrelation (1–48 Stunden)\")\nplt.xlabel(\"Lag (h)\")\nplt.ylabel(\"Korrelation\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\nimport numpy as np\n\ny = s.to_numpy()\ny = y - np.nanmean(y)\n\ndef autocorr(y, k):\n    return np.corrcoef(y[:-k], y[k:])[0,1]\n\nlags = range(1, 49)\nac_np = [autocorr(y, k) for k in lags]\n\nplt.stem(list(lags), ac_np)\nplt.title(\"Autokorrelation (NumPy)\")\nplt.xlabel(\"Lag\")\nplt.ylabel(\"Korrelation\")\nplt.show()",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>6 Lags & Autokorrelation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/06-lags-autokorrelation.html#interpretation-der-autokorrelation",
+    "href": "skript/06-lags-autokorrelation.html#interpretation-der-autokorrelation",
+    "title": "6  6 Lags & Autokorrelation",
+    "section": "7.4 6.4 Interpretation der Autokorrelation",
+    "text": "7.4 6.4 Interpretation der Autokorrelation\nTypische Muster:\n\nLangsam abfallende Kurve → starker Trend\nPeriodische Peaks (z. B. bei 24, 48, 72) → Saison\nSchneller Abfall gegen 0 → schwache Abhängigkeit\n\n\n\n\n\n\n\n\nAchtung\n\n\n\nTrend kann Autokorrelation künstlich erhöhen. Gegebenenfalls zuerst detrenden oder differenzieren.",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>6 Lags & Autokorrelation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/06-lags-autokorrelation.html#mini-aufgaben",
+    "href": "skript/06-lags-autokorrelation.html#mini-aufgaben",
+    "title": "6  6 Lags & Autokorrelation",
+    "section": "7.5 6.5 Mini-Aufgaben",
+    "text": "7.5 6.5 Mini-Aufgaben\n\nEntfernen Sie den Trend (z. B. durch Rolling Mean).\n\nWie verändert sich die Autokorrelation?\n\nErzeugen Sie eine Zeitreihe ohne Saison.\n\nWie sieht die Autokorrelationsfunktion aus?\n\nErzeugen Sie reine Zufallsdaten.\n\nWas erwarten Sie?",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>6 Lags & Autokorrelation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html",
+    "href": "skript/07-anomalien.html",
+    "title": "7  7 Anomalies",
+    "section": "",
+    "text": "8 7 Anomalies\nAnomalies are observations that deviate significantly from expected behavior.\nIn time series this means:\nImportant: anomalies are context-dependent.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalies</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#beispielsignal-mit-ausreißern",
+    "href": "skript/07-anomalien.html#beispielsignal-mit-ausreißern",
+    "title": "7  7 Anomalien",
+    "section": "8.1 7.1 Beispielsignal mit Ausreißern",
+    "text": "8.1 7.1 Beispielsignal mit Ausreißern\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(99)\n\nt = pd.date_range(\"2025-01-01\", periods=24*10, freq=\"H\")\ntrend = np.linspace(0, 2, len(t))\nseason = 0.8 * np.sin(2*np.pi*(t.hour)/24)\nnoise = 0.3 * rng.normal(size=len(t))\n\ns = pd.Series(10 + trend + season + noise, index=t, name=\"signal\")\n\n# künstliche Anomalien\ns.iloc[40] += 4\ns.iloc[120] -= 3\n\ns.plot(title=\"Signal mit Anomalien\")\nplt.show()\n\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19396/2246874237.py:7: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  t = pd.date_range(\"2025-01-01\", periods=24*10, freq=\"H\")",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalien</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#globale-z-score-methode",
+    "href": "skript/07-anomalien.html#globale-z-score-methode",
+    "title": "7  7 Anomalien",
+    "section": "8.2 7.2 Globale Z-Score Methode",
+    "text": "8.2 7.2 Globale Z-Score Methode\nWir standardisieren die gesamte Zeitreihe.\n\nPandasNumPy\n\n\n\nz = (s - s.mean()) / s.std()\nanomalies = s[abs(z) &gt; 3]\n\nax = s.plot(label=\"Signal\")\nanomalies.plot(ax=ax, linestyle=\"None\", marker=\"o\", label=\"Anomalie\")\nplt.legend()\nplt.title(\"Anomalien (Z-Score)\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\ny = s.to_numpy()\n\nz_np = (y - np.mean(y)) / np.std(y)\nanomalies_idx = np.where(np.abs(z_np) &gt; 3)[0]\n\nplt.plot(y, label=\"Signal\")\nplt.scatter(anomalies_idx, y[anomalies_idx], label=\"Anomalie\")\nplt.legend()\nplt.title(\"Anomalien (NumPy Z-Score)\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAchtung\n\n\n\nZ-Score funktioniert schlecht bei starkem Trend oder Saison, weil globale Mittelwerte verzerren.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalien</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#lokale-anomalie-baseline-residuum",
+    "href": "skript/07-anomalien.html#lokale-anomalie-baseline-residuum",
+    "title": "7  7 Anomalien",
+    "section": "8.3 7.3 Lokale Anomalie (Baseline + Residuum)",
+    "text": "8.3 7.3 Lokale Anomalie (Baseline + Residuum)\nStatt globaler Standardisierung definieren wir eine lokale Baseline.\n\nbaseline = s.ewm(span=24, adjust=False).mean()\nresidual = s - baseline\n\nscore = (residual - residual.mean()) / residual.std()\nanomalies_local = s[abs(score) &gt; 3]\n\nax = s.plot(alpha=0.6, label=\"Signal\")\nbaseline.plot(ax=ax, label=\"Baseline\")\nanomalies_local.plot(ax=ax, linestyle=\"None\", marker=\"o\", label=\"Anomalie\")\nplt.legend()\nplt.title(\"Lokale Anomalien (EWMA-Baseline)\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nInterpretation\n\n\n\nLokale Verfahren sind robuster, wenn Trend oder Saison vorhanden sind.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalien</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#rolling-standardabweichung",
+    "href": "skript/07-anomalien.html#rolling-standardabweichung",
+    "title": "7  7 Anomalien",
+    "section": "8.4 7.4 Rolling-Standardabweichung",
+    "text": "8.4 7.4 Rolling-Standardabweichung\nAnomalien können auch als starke Abweichung relativ zur lokalen Varianz definiert werden.\n\nrolling_std = s.rolling(\"24H\").std()\nrolling_mean = s.rolling(\"24H\").mean()\n\nupper = rolling_mean + 3 * rolling_std\nlower = rolling_mean - 3 * rolling_std\n\nax = s.plot(label=\"Signal\")\nupper.plot(ax=ax, linestyle=\"--\", label=\"Upper Bound\")\nlower.plot(ax=ax, linestyle=\"--\", label=\"Lower Bound\")\nplt.legend()\nplt.title(\"Anomalien via Rolling-Bounds\")\nplt.show()\n\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19396/2083333883.py:1: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  rolling_std = s.rolling(\"24H\").std()\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19396/2083333883.py:2: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  rolling_mean = s.rolling(\"24H\").mean()",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalien</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#strukturbruch-vs-ausreißer",
+    "href": "skript/07-anomalien.html#strukturbruch-vs-ausreißer",
+    "title": "7  7 Anomalien",
+    "section": "8.5 7.5 Strukturbruch vs Ausreißer",
+    "text": "8.5 7.5 Strukturbruch vs Ausreißer\nEin einzelner Peak → Ausreißer\nDauerhafte Niveauänderung → Strukturbruch\nBeide erfordern unterschiedliche Interpretation.\n\n\n\n\n\n\n\nMethodischer Hinweis\n\n\n\nBevor Sie Anomalien markieren:\n\nTrend prüfen\n\nSaison prüfen\n\nBaseline definieren\n\nSchwellenwert begründen",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalien</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#mini-aufgaben",
+    "href": "skript/07-anomalien.html#mini-aufgaben",
+    "title": "7  7 Anomalien",
+    "section": "8.6 7.6 Mini-Aufgaben",
+    "text": "8.6 7.6 Mini-Aufgaben\n\nEntfernen Sie den Trend vor Anwendung des Z-Scores.\n\nWie verändert sich das Ergebnis?\n\nVerringern Sie den Schwellenwert von 3 auf 2.\n\nWas passiert?\n\nSimulieren Sie einen dauerhaften Niveau-Sprung.\n\nWird dieser als Anomalie erkannt?",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalien</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html",
+    "href": "skript/08-forecasting-baselines.html",
+    "title": "8  8 Forecasting Baselines & Evaluation",
+    "section": "",
+    "text": "9 8 Forecasting Baselines & Evaluation\nBefore applying complex models, simple baseline models should always be defined.\nBaselines answer the question:",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting Baselines & Evaluation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#beispielzeitreihe",
+    "href": "skript/08-forecasting-baselines.html#beispielzeitreihe",
+    "title": "8  8 Forecasting-Baselines & Bewertung",
+    "section": "9.1 8.1 Beispielzeitreihe",
+    "text": "9.1 8.1 Beispielzeitreihe\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(123)\n\nt = pd.date_range(\"2025-01-01\", periods=24*14, freq=\"H\")\ntrend = np.linspace(0, 2, len(t))\nseason = 0.9 * np.sin(2*np.pi*(t.hour)/24)\nnoise = 0.3 * rng.normal(size=len(t))\n\ns = pd.Series(20 + trend + season + noise, index=t, name=\"signal\")\n\ns.plot(title=\"Zeitreihe für Forecasting\")\nplt.show()\n\n/var/folders/p_/ks3trxjx0jd839_g4g0vm4nc0000gn/T/ipykernel_19421/1656542722.py:7: FutureWarning: 'H' is deprecated and will be removed in a future version, please use 'h' instead.\n  t = pd.date_range(\"2025-01-01\", periods=24*14, freq=\"H\")",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting-Baselines & Bewertung</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#train-test-split",
+    "href": "skript/08-forecasting-baselines.html#train-test-split",
+    "title": "8  8 Forecasting Baselines & Evaluation",
+    "section": "9.2 8.2 Train-Test Split",
+    "text": "9.2 8.2 Train-Test Split\nWe use 80% of the data for training and 20% for testing.\n\nsplit = int(len(s) * 0.8)\n\ntrain = s.iloc[:split]\ntest = s.iloc[split:]\n\ntrain.index.min(), train.index.max(), test.index.min(), test.index.max()\n\n(Timestamp('2025-01-01 00:00:00'),\n Timestamp('2025-01-12 03:00:00'),\n Timestamp('2025-01-12 04:00:00'),\n Timestamp('2025-01-14 23:00:00'))",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting Baselines & Evaluation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#naive-forecast",
+    "href": "skript/08-forecasting-baselines.html#naive-forecast",
+    "title": "8  8 Forecasting Baselines & Evaluation",
+    "section": "9.3 8.3 Naive Forecast",
+    "text": "9.3 8.3 Naive Forecast\nNext value = last observed value.\n\nPandasNumPy\n\n\n\nnaive = test.copy()\nnaive[:] = train.iloc[-1]\n\n\n\n\ny = s.to_numpy()\ntrain_np = y[:split]\ntest_np = y[split:]\n\nnaive_np = np.full_like(test_np, train_np[-1])",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting Baselines & Evaluation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#seasonal-naive-24-stunden",
+    "href": "skript/08-forecasting-baselines.html#seasonal-naive-24-stunden",
+    "title": "8  8 Forecasting-Baselines & Bewertung",
+    "section": "9.4 8.4 Seasonal Naive (24 Stunden)",
+    "text": "9.4 8.4 Seasonal Naive (24 Stunden)\nNächster Wert = Wert von vor 24 Stunden.\n\nPandasNumPy\n\n\n\nseasonal_naive = s.shift(24).iloc[split:]\n\n\n\n\nseasonal_naive_np = y[split-24:-24]",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting-Baselines & Bewertung</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#moving-average-baseline",
+    "href": "skript/08-forecasting-baselines.html#moving-average-baseline",
+    "title": "8  8 Forecasting Baselines & Evaluation",
+    "section": "9.5 8.5 Moving Average Baseline",
+    "text": "9.5 8.5 Moving Average Baseline\nForecast = mean of the last 24 hours.\n\nPandasNumPy\n\n\n\nma_value = train.iloc[-24:].mean()\nma_forecast = test.copy()\nma_forecast[:] = ma_value\n\n\n\n\nma_value_np = np.mean(train_np[-24:])\nma_forecast_np = np.full_like(test_np, ma_value_np)",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting Baselines & Evaluation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#vergleich-visualisieren",
+    "href": "skript/08-forecasting-baselines.html#vergleich-visualisieren",
+    "title": "8  8 Forecasting-Baselines & Bewertung",
+    "section": "9.6 8.6 Vergleich visualisieren",
+    "text": "9.6 8.6 Vergleich visualisieren\n\nplt.figure()\ntrain.plot(label=\"Train\")\ntest.plot(label=\"Test\")\nnaive.plot(label=\"Naive\")\nseasonal_naive.plot(label=\"Seasonal Naive\")\nma_forecast.plot(label=\"MA(24)\")\nplt.legend()\nplt.title(\"Forecast Baselines\")\nplt.show()",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting-Baselines & Bewertung</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#fehlermaße",
+    "href": "skript/08-forecasting-baselines.html#fehlermaße",
+    "title": "8  8 Forecasting-Baselines & Bewertung",
+    "section": "9.7 8.7 Fehlermaße",
+    "text": "9.7 8.7 Fehlermaße\nWir verwenden den Mean Absolute Error (MAE):\n[ MAE = |y_{true} - y_{pred}| ]\n\nPandasNumPy\n\n\n\ndef mae(y_true, y_pred):\n    return np.mean(np.abs(y_true - y_pred))\n\nprint(\"MAE Naive:\", mae(test, naive))\nprint(\"MAE Seasonal Naive:\", mae(test, seasonal_naive))\nprint(\"MAE MA(24):\", mae(test, ma_forecast))\n\nMAE Naive: 0.6298837368696829\nMAE Seasonal Naive: 0.3320412574311427\nMAE MA(24): 0.6228787570177815\n\n\n\n\n\ndef mae_np(y_true, y_pred):\n    return np.mean(np.abs(y_true - y_pred))\n\nprint(\"MAE Naive:\", mae_np(test_np, naive_np))\nprint(\"MAE Seasonal:\", mae_np(test_np, seasonal_naive_np))\nprint(\"MAE MA(24):\", mae_np(test_np, ma_forecast_np))\n\nMAE Naive: 0.6298837368696829\nMAE Seasonal: 0.3320412574311427\nMAE MA(24): 0.6228787570177815",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting-Baselines & Bewertung</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#interpretation",
+    "href": "skript/08-forecasting-baselines.html#interpretation",
+    "title": "8  8 Forecasting Baselines & Evaluation",
+    "section": "9.8 8.8 Interpretation",
+    "text": "9.8 8.8 Interpretation\nTypical observations:\n\nWith a strong seasonal pattern, Seasonal Naive often performs best.\nWith a weak pattern, Naive can be surprisingly strong.\nMoving Average smooths the data but reacts slowly to trend changes.\n\n\n\n\n\n\n\n\nMethodological Note\n\n\n\nComparing to a baseline is not a formality, but a quality check.",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting Baselines & Evaluation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#mini-aufgaben",
+    "href": "skript/08-forecasting-baselines.html#mini-aufgaben",
+    "title": "8  8 Forecasting-Baselines & Bewertung",
+    "section": "9.9 8.9 Mini-Aufgaben",
+    "text": "9.9 8.9 Mini-Aufgaben\n\nErhöhen Sie die Stärke der Saison.\n\nWelche Baseline gewinnt?\n\nEntfernen Sie die Saison vollständig.\n\nWelche Baseline wird besser?\n\nFügen Sie einen starken Trend hinzu.\n\nWie reagieren die Modelle?",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting-Baselines & Bewertung</span>"
+    ]
+  },
+  {
+    "objectID": "skript/09-lernzielkontrolle.html",
+    "href": "skript/09-lernzielkontrolle.html",
+    "title": "9  9 Learning Objectives Check",
+    "section": "",
+    "text": "10 9 Learning Objectives Check\nUse this checklist for self-assessment.",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>9 Learning Objectives Check</span>"
+    ]
+  },
+  {
+    "objectID": "skript/09-lernzielkontrolle.html#fachliche-kompetenzen",
+    "href": "skript/09-lernzielkontrolle.html#fachliche-kompetenzen",
+    "title": "9  9 Lernzielkontrolle",
+    "section": "10.1 9.1 Fachliche Kompetenzen",
+    "text": "10.1 9.1 Fachliche Kompetenzen\nIch kann …\n\neine Zeitreihe methodisch einordnen (Messprozess, Abtastrate).\neine Zeitreihe validieren (Sortierung, Duplikate, Missing Values).\nResampling begründet einsetzen (Aggregation vs. Interpolation).\nRolling Mean und EWMA unterscheiden und passend wählen.\nTrend und Saison konzeptionell trennen.\nLag-Features erzeugen und interpretieren.\nAutokorrelation interpretieren.\nAnomalien global und lokal definieren.\nBaseline-Forecasts implementieren.\nForecast-Modelle mit MAE bewerten.",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>9 Lernzielkontrolle</span>"
+    ]
+  },
+  {
+    "objectID": "skript/09-lernzielkontrolle.html#verständnisfragen",
+    "href": "skript/09-lernzielkontrolle.html#verständnisfragen",
+    "title": "9  9 Lernzielkontrolle",
+    "section": "10.2 9.2 Verständnisfragen",
+    "text": "10.2 9.2 Verständnisfragen\n\nWarum ist die Abtastrate für die Interpretation einer Saison entscheidend?\nWann ist Interpolation problematisch?\nWarum kann ein Trend die Autokorrelation künstlich erhöhen?\nWarum sind Baselines methodisch wichtig?\nWodurch unterscheidet sich ein Strukturbruch von einem Ausreißer?\n\n\n\n\n\n\n\n\nHinweis\n\n\n\nWenn mehrere Punkte unsicher sind, wiederholen Sie gezielt die entsprechenden Kapitel und bearbeiten Sie die Übungsaufgaben.",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>9 Lernzielkontrolle</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html",
+    "href": "skript/10-uebung.html",
+    "title": "10  Exercise 10: Time Series Workflow",
+    "section": "",
+    "text": "11 Exercise 10: Time Series Workflow\nThis exercise combines several methods from the module.",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Exercise 10: Time Series Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#aufgabe-1-eigene-zeitreihe-erzeugen",
+    "href": "skript/10-uebung.html#aufgabe-1-eigene-zeitreihe-erzeugen",
+    "title": "10  10 Übung: Zeitreihen-Workflow",
+    "section": "11.1 Aufgabe 1: Eigene Zeitreihe erzeugen",
+    "text": "11.1 Aufgabe 1: Eigene Zeitreihe erzeugen\nErzeugen Sie eine Zeitreihe mit:\n\n10 Tagen, stündlicher Abtastrate\nTrend\nTages-Saison\nRauschen\nmindestens 3 Anomalien\n\nVisualisieren Sie die Zeitreihe.",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>10 Übung: Zeitreihen-Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#aufgabe-2-validierung",
+    "href": "skript/10-uebung.html#aufgabe-2-validierung",
+    "title": "10  10 Übung: Zeitreihen-Workflow",
+    "section": "11.2 Aufgabe 2: Validierung",
+    "text": "11.2 Aufgabe 2: Validierung\nBauen Sie absichtlich Fehler ein:\n\nDuplikate\nMissing Values\nUnsortierte Zeitpunkte\n\nImplementieren Sie eine saubere Validierung.",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>10 Übung: Zeitreihen-Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#aufgabe-3-resampling",
+    "href": "skript/10-uebung.html#aufgabe-3-resampling",
+    "title": "10  10 Übung: Zeitreihen-Workflow",
+    "section": "11.3 Aufgabe 3: Resampling",
+    "text": "11.3 Aufgabe 3: Resampling\n\nAggregieren Sie auf Tagesmittel.\nVergleichen Sie Original und Aggregation.\nInterpretieren Sie Informationsverlust.",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>10 Übung: Zeitreihen-Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#aufgabe-4-glättung",
+    "href": "skript/10-uebung.html#aufgabe-4-glättung",
+    "title": "10  10 Übung: Zeitreihen-Workflow",
+    "section": "11.4 Aufgabe 4: Glättung",
+    "text": "11.4 Aufgabe 4: Glättung\n\nTesten Sie Rolling-Fenster von 6H, 24H, 72H.\nWelche Struktur wird jeweils sichtbar?",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>10 Übung: Zeitreihen-Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#aufgabe-5-anomalien",
+    "href": "skript/10-uebung.html#aufgabe-5-anomalien",
+    "title": "10  10 Übung: Zeitreihen-Workflow",
+    "section": "11.5 Aufgabe 5: Anomalien",
+    "text": "11.5 Aufgabe 5: Anomalien\n\nImplementieren Sie eine EWMA-Baseline.\nDetektieren Sie Anomalien.\nVariieren Sie den Schwellenwert.",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>10 Übung: Zeitreihen-Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#aufgabe-6-forecast-baselines",
+    "href": "skript/10-uebung.html#aufgabe-6-forecast-baselines",
+    "title": "10  10 Übung: Zeitreihen-Workflow",
+    "section": "11.6 Aufgabe 6: Forecast-Baselines",
+    "text": "11.6 Aufgabe 6: Forecast-Baselines\n\nTrain-Test-Split (80/20)\nNaive\nSeasonal Naive (24H)\nMA(24)\n\nVergleichen Sie die MAE-Werte und interpretieren Sie das Ergebnis.\n\n\n\n\n\n\n\nAbgabeformat (optional)\n\n\n\nPlots + kurze Interpretation (Stichpunkte).",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>10 Übung: Zeitreihen-Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/11-klausurfragen.html",
+    "href": "skript/11-klausurfragen.html",
+    "title": "11  11 Exam Questions",
+    "section": "",
+    "text": "12 11 Exam Questions",
+    "crumbs": [
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>11 Exam Questions</span>"
+    ]
+  },
+  {
+    "objectID": "skript/11-klausurfragen.html#verständnisfragen",
+    "href": "skript/11-klausurfragen.html#verständnisfragen",
+    "title": "11  11 Klausurfragen",
+    "section": "12.1 Verständnisfragen",
+    "text": "12.1 Verständnisfragen\n\nDefinieren Sie eine Zeitreihe.\nWas ist der Unterschied zwischen Aggregation und Interpolation?\nErklären Sie Rolling Mean und EWMA konzeptionell.\nWas ist ein Lag-Feature?\nWas misst die Autokorrelation?\nWarum kann Trend die Autokorrelation beeinflussen?\nErklären Sie den Unterschied zwischen globaler und lokaler Anomalie-Detektion.\nWas ist eine Forecast-Baseline?\nWarum sind Baselines methodisch notwendig?\nWas misst der MAE?",
+    "crumbs": [
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>11 Klausurfragen</span>"
+    ]
+  },
+  {
+    "objectID": "skript/11-klausurfragen.html#transferfragen",
+    "href": "skript/11-klausurfragen.html#transferfragen",
+    "title": "11  11 Klausurfragen",
+    "section": "12.2 Transferfragen",
+    "text": "12.2 Transferfragen\n\nSie erhalten Maschinendaten mit starker Wochenperiodik.\n\nWelche Schritte würden Sie durchführen?\n\nEine Zeitreihe zeigt plötzlich dauerhaft höhere Werte.\n\nAusreißer oder Strukturbruch? Begründen Sie.\n\nZwei Zeitreihen sollen verglichen werden, eine minütlich, eine stündlich gemessen.\n\nWelche Schritte sind notwendig?\n\n\n\n\n\n\n\n\n\nHinweis zur Prüfungsvorbereitung\n\n\n\nBegründen Sie Ihre Antworten stets methodisch. Reine Definitionen reichen meist nicht aus.",
+    "crumbs": [
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>11 Klausurfragen</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#example-time-series-with-problems",
+    "href": "skript/02-vorverarbeitung-validierung.html#example-time-series-with-problems",
+    "title": "2  2 Preprocessing & Validation of a Time Series",
+    "section": "3.1 2.1 Example Time Series with Problems",
+    "text": "3.1 2.1 Example Time Series with Problems\nWe intentionally create a faulty time series (unsorted, duplicates, missing values).\n\nimport numpy as np\nimport pandas as pd\n\nrng = np.random.default_rng(1)\n\nt = pd.date_range(\"2025-01-01\", periods=24*3, freq=\"h\")\ny = pd.Series(10 + rng.normal(size=len(t)), index=t, name=\"signal\")\n\n# create problems\ny = y.sample(frac=1)                      # unsorted\ny = pd.concat([y, y.iloc[5:8]])           # duplicates (append is deprecated/removed)\ny.iloc[10:15] = np.nan                    # missing values\n\ny.head()\n\n2025-01-03 13:00:00    10.272791\n2025-01-03 12:00:00    10.054102\n2025-01-02 23:00:00     9.493708\n2025-01-03 22:00:00    11.224647\n2025-01-02 18:00:00     9.927956\nName: signal, dtype: float64",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Preprocessing & Validation of a Time Series</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#step-1-ensure-sorting",
+    "href": "skript/02-vorverarbeitung-validierung.html#step-1-ensure-sorting",
+    "title": "2  2 Preprocessing & Validation of a Time Series",
+    "section": "3.2 2.2 Step 1: Ensure Sorting",
+    "text": "3.2 2.2 Step 1: Ensure Sorting\n\ny = y.sort_index()",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Preprocessing & Validation of a Time Series</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#step-2-detecting-and-handling-duplicates",
+    "href": "skript/02-vorverarbeitung-validierung.html#step-2-detecting-and-handling-duplicates",
+    "title": "2  2 Preprocessing & Validation of a Time Series",
+    "section": "3.3 2.3 Step 2: Detecting and Handling Duplicates",
+    "text": "3.3 2.3 Step 2: Detecting and Handling Duplicates\nDetect duplicates:\n\ndup_mask = y.index.duplicated(keep=False)\ny[dup_mask].head(10)\n\n2025-01-01 21:00:00     9.724397\n2025-01-01 21:00:00     9.724397\n2025-01-02 13:00:00     8.351925\n2025-01-02 13:00:00     8.351925\n2025-01-03 18:00:00    10.235506\n2025-01-03 18:00:00    10.235506\nName: signal, dtype: float64\n\n\nDuplicates must be handled methodically, for example:\n\nAverage per timestamp (typical for measurements)\nKeep first/last value (typical for status updates)\nRemove (if clearly erroneous)\n\nExample: Average per timestamp\n\ny = y.groupby(level=0).mean()",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Preprocessing & Validation of a Time Series</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#step-3-analyze-missing-values",
+    "href": "skript/02-vorverarbeitung-validierung.html#step-3-analyze-missing-values",
+    "title": "2  2 Preprocessing & Validation of a Time Series",
+    "section": "3.4 2.4 Step 3: Analyze Missing Values",
+    "text": "3.4 2.4 Step 3: Analyze Missing Values\n\ny.isna().sum()\n\n5\n\n\n\n3.4.1 Visualizing the Gaps\n\nimport matplotlib.pyplot as plt\n\ny.plot(title=\"Time Series with Missing Values\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n3.4.2 Treatment options\n\ny_ffill = y.ffill()\ny_interp = y.interpolate(\"time\")\n\n\n\n\n\n\n\nDecision Helper\n\n\n\n\nffill: useful for state data (“applies until the next measurement”)\ninterpolate(\"time\"): useful for continuous measurements",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Preprocessing & Validation of a Time Series</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#step-4-check-sampling-rate",
+    "href": "skript/02-vorverarbeitung-validierung.html#step-4-check-sampling-rate",
+    "title": "2  2 Preprocessing & Validation of a Time Series",
+    "section": "3.5 2.5 Step 4: Check Sampling Rate",
+    "text": "3.5 2.5 Step 4: Check Sampling Rate\nIs the time series regular?\n\ndiffs = y.index.to_series().diff()\ndiffs.value_counts().head()\n\n0 days 01:00:00    71\nName: count, dtype: int64\n\n\nIf multiple time intervals occur → irregular sampling or time gaps.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Preprocessing & Validation of a Time Series</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#making-time-gaps-explicit",
+    "href": "skript/02-vorverarbeitung-validierung.html#making-time-gaps-explicit",
+    "title": "2  2 Preprocessing & Validation of a Time Series",
+    "section": "3.6 2.6 Making Time Gaps Explicit",
+    "text": "3.6 2.6 Making Time Gaps Explicit\nUsing asfreq enforces the expected frequency. Missing time points appear as NaN.\n\ny_regular = y.asfreq(\"h\")\ny_regular.isna().sum()\n\n5\n\n\n\n\n\n\n\n\nWarning\n\n\n\nWithout an explicit frequency, gaps in time may remain invisible.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Preprocessing & Validation of a Time Series</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#validation-checklist",
+    "href": "skript/02-vorverarbeitung-validierung.html#validation-checklist",
+    "title": "2  2 Preprocessing & Validation of a Time Series",
+    "section": "3.7 2.7 Validation Checklist",
+    "text": "3.7 2.7 Validation Checklist\nBefore proceeding with further analysis:\n\nIndex is a DatetimeIndex\nTime series is sorted\nDuplicates identified and properly handled\nMissing values identified and a strategy chosen\nSampling rate checked\nFrequency (if applicable) explicitly set",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Preprocessing & Validation of a Time Series</span>"
+    ]
+  },
+  {
+    "objectID": "skript/02-vorverarbeitung-validierung.html#mini-exercise",
+    "href": "skript/02-vorverarbeitung-validierung.html#mini-exercise",
+    "title": "2  2 Preprocessing & Validation of a Time Series",
+    "section": "3.8 2.8 Mini-Exercise",
+    "text": "3.8 2.8 Mini-Exercise\nCreate your own time series with:\n\nirregular sampling\n5 missing timestamps\n3 duplicates\n\nThen implement a proper validation according to the checklist.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>2 Preprocessing & Validation of a Time Series</span>"
+    ]
+  },
+  {
+    "objectID": "skript/03-resampling-alignment.html#original-time-series-hourly",
+    "href": "skript/03-resampling-alignment.html#original-time-series-hourly",
+    "title": "3  3 Resampling & Alignment",
+    "section": "4.1 3.1 Original Time Series (Hourly)",
+    "text": "4.1 3.1 Original Time Series (Hourly)\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(2)\n\nt = pd.date_range(\"2025-01-01\", periods=24*5, freq=\"H\")\ny = pd.Series(10 + rng.normal(size=len(t)), index=t, name=\"signal\")\n\ny.plot(title=\"Hourly Time Series\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_17708\\1910220980.py:7: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>3 Resampling & Alignment</span>"
+    ]
+  },
+  {
+    "objectID": "skript/03-resampling-alignment.html#alignment-of-two-time-series",
+    "href": "skript/03-resampling-alignment.html#alignment-of-two-time-series",
+    "title": "3  3 Resampling & Alignment",
+    "section": "4.4 3.4 Alignment of Two Time Series",
+    "text": "4.4 3.4 Alignment of Two Time Series\nTwo time series with different sampling rates:\n\nt2 = pd.date_range(\"2025-01-01\", periods=24*5, freq=\"2H\")\ny2 = pd.Series(5 + rng.normal(size=len(t2)), index=t2, name=\"signal2\")\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_17708\\3177252539.py:1: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.\n\n\n\nFor joint analysis, both series must have the same frequency.\n\ny2_aligned = y2.resample(\"H\").interpolate(\"time\")\n\ndf = pd.concat([y, y2_aligned], axis=1)\n\ndf.plot(title=\"Aligned Time Series\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_17708\\1233815767.py:1: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nAlignment means: - same frequency - same time span - same time zone",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>3 Resampling & Alignment</span>"
+    ]
+  },
+  {
+    "objectID": "skript/03-resampling-alignment.html#common-sources-of-error",
+    "href": "skript/03-resampling-alignment.html#common-sources-of-error",
+    "title": "3  3 Resampling & Alignment",
+    "section": "4.5 3.5 Common Sources of Error",
+    "text": "4.5 3.5 Common Sources of Error\n\nComparisons without prior resampling\nMixing local time and UTC\nAggregation without considering data types (e.g., sum vs mean)",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>3 Resampling & Alignment</span>"
+    ]
+  },
+  {
+    "objectID": "skript/03-resampling-alignment.html#mini-exercise",
+    "href": "skript/03-resampling-alignment.html#mini-exercise",
+    "title": "3  3 Resampling & Alignment",
+    "section": "4.6 3.6 Mini Exercise",
+    "text": "4.6 3.6 Mini Exercise\n\nGenerate a minute-level time series over 2 days.\nAggregate to hourly averages.\nCompare visually:\n\nOriginal\nHourly averages\n\nInterpret the loss of information.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>3 Resampling & Alignment</span>"
+    ]
+  },
+  {
+    "objectID": "skript/04-glaettung.html#example-signal",
+    "href": "skript/04-glaettung.html#example-signal",
+    "title": "4  4 Smoothing & Noise Reduction",
+    "section": "5.1 4.1 Example Signal",
+    "text": "5.1 4.1 Example Signal\nWe use a time series with a daily pattern, noise, and individual outliers.\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(42)\n\nt = pd.date_range(\"2025-01-01\", periods=24*10, freq=\"H\")  # 10 days hourly\ntrend = np.linspace(0, 2, len(t))\nseason = 0.9 * np.sin(2*np.pi*(t.hour)/24)\nnoise = 0.35 * rng.normal(size=len(t))\n\ns = pd.Series(10 + trend + season + noise, index=t, name=\"signal\")\n\n# Outliers\ns.iloc[30] += 3.0\ns.iloc[120] -= 2.5\n\ns.plot(title=\"Example Signal (raw)\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_14248\\3654266193.py:7: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>4 Smoothing & Noise Reduction</span>"
+    ]
+  },
+  {
+    "objectID": "skript/04-glaettung.html#rolling-mean",
+    "href": "skript/04-glaettung.html#rolling-mean",
+    "title": "4  4 Smoothing & Noise Reduction",
+    "section": "5.2 4.2 Rolling Mean",
+    "text": "5.2 4.2 Rolling Mean\nThe rolling mean is the classic smoothing method: the average over a window.\n\nPandas (recommended)NumPy (principle)\n\n\n\nroll_6h = s.rolling(\"6H\").mean()\nroll_24h = s.rolling(\"24H\").mean()\n\nax = s.plot(alpha=0.45, label=\"Signal\")\nroll_6h.plot(ax=ax, label=\"Rolling 6H\")\nroll_24h.plot(ax=ax, label=\"Rolling 24H\")\nplt.legend()\nplt.title(\"Rolling Mean (Pandas)\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_14248\\1470441625.py:1: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_14248\\1470441625.py:2: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDecision aid\n\n\n\n\n6H: reduces short-term noise, events remain visible\n24H: shows basic level/trend, strongly dampens daily patterns\n\n\n\n\n\nNumPy variant: moving average as convolution (convolve).\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\ny = s.to_numpy()\n\ndef moving_average(y, window):\n    kernel = np.ones(window) / window\n    return np.convolve(y, kernel, mode=\"same\")\n\nma_6 = moving_average(y, 6)\nma_24 = moving_average(y, 24)\n\nplt.plot(y, alpha=0.45, label=\"Signal\")\nplt.plot(ma_6, label=\"MA 6 Samples\")\nplt.plot(ma_24, label=\"MA 24 Samples\")\nplt.legend()\nplt.title(\"Moving Average (NumPy)\")\nplt.xlabel(\"Sample\")\nplt.ylabel(\"Value\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAttention\n\n\n\nWhen convolving, you must consciously accept edge handling (here: mode=“same”). Pandas handles edge areas consistently with min_periods and NaNs.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>4 Smoothing & Noise Reduction</span>"
+    ]
+  },
+  {
+    "objectID": "skript/04-glaettung.html#method-choice-which-approach-when",
+    "href": "skript/04-glaettung.html#method-choice-which-approach-when",
+    "title": "4  4 Smoothing & Noise Reduction",
+    "section": "5.4 4.4 Method Choice: Which Approach When?",
+    "text": "5.4 4.4 Method Choice: Which Approach When?\n\n\n\n\n\n\nDecision Aid\n\n\n\nRolling Mean is suitable when…\n- You want to average over a clearly defined time window (e.g., “last 24 hours”).\nEWMA is suitable when…\n- You want a smooth baseline that reacts more quickly to changes.\n- You want to detect anomalies as deviations from a dynamic baseline.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>4 Smoothing & Noise Reduction</span>"
+    ]
+  },
+  {
+    "objectID": "skript/04-glaettung.html#mini-exercises",
+    "href": "skript/04-glaettung.html#mini-exercises",
+    "title": "4  4 Smoothing & Noise Reduction",
+    "section": "5.5 4.5 Mini-Exercises",
+    "text": "5.5 4.5 Mini-Exercises\n\nWindow Selection: Test rolling windows of 3H, 12H, 48H.\n\nWhich structures become visible or disappear in each case?\n\nAnomalies & Smoothing: Increase the outlier amplitude.\n\nAt what smoothing strength does the outlier “disappear” in the smoothed signal?\n\nEWMA Sensitivity: Vary span (Pandas) or alpha (NumPy).\n\nWhich parameters respond “quickly” and which “slowly”? Explain why.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>4 Smoothing & Noise Reduction</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#example-signal",
+    "href": "skript/05-trend-saison.html#example-signal",
+    "title": "5  5 Trend & Season",
+    "section": "6.1 5.1 Example Signal",
+    "text": "6.1 5.1 Example Signal\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(10)\n\nt = pd.date_range(\"2025-01-01\", periods=24*14, freq=\"H\")\ntrend = np.linspace(0, 4, len(t))\nseason = 1.2 * np.sin(2*np.pi*(t.hour)/24)\nnoise = 0.4 * rng.normal(size=len(t))\n\ns = pd.Series(20 + trend + season + noise, index=t, name=\"signal\")\n\ns.plot(title=\"Signal with Trend and Daily Season\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_19756\\845085173.py:7: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Season</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#visualizing-the-season",
+    "href": "skript/05-trend-saison.html#visualizing-the-season",
+    "title": "5  5 Trend & Season",
+    "section": "6.2 5.2 Visualizing the Season",
+    "text": "6.2 5.2 Visualizing the Season\n\n6.2.1 Hourly Average\n\nseason_hour = s.groupby(s.index.hour).mean()\n\nseason_hour.plot(marker=\"o\")\nplt.title(\"Average Daily Profile (0–23h)\")\nplt.xlabel(\"Hour\")\nplt.ylabel(\"Average\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nInterpretation\n\n\n\nA periodic pattern in this visualization suggests a daily seasonality.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Season</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#estimating-the-trend-strong-smoothing",
+    "href": "skript/05-trend-saison.html#estimating-the-trend-strong-smoothing",
+    "title": "5  5 Trend & Season",
+    "section": "6.3 5.3 Estimating the Trend (Strong Smoothing)",
+    "text": "6.3 5.3 Estimating the Trend (Strong Smoothing)\n\nPandasNumPy (Concept)\n\n\n\ntrend_est = s.rolling(\"72H\").mean()\n\nax = s.plot(alpha=0.4, label=\"Signal\")\ntrend_est.plot(ax=ax, linewidth=2, label=\"Trend (Rolling 72H)\")\nplt.legend()\nplt.title(\"Trend Estimation\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_19756\\2131990700.py:1: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.\n\n\n\n\n\n\n\n\n\n\n\n\n\nimport numpy as np\n\ny = s.to_numpy()\n\ndef moving_average(y, window):\n    kernel = np.ones(window) / window\n    return np.convolve(y, kernel, mode=\"same\")\n\ntrend_np = moving_average(y, 72)\n\nplt.plot(y, alpha=0.4, label=\"Signal\")\nplt.plot(trend_np, linewidth=2, label=\"Trend (MA 72)\")\nplt.legend()\nplt.title(\"Trend Estimation (NumPy)\")\nplt.show()",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Season</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#calculating-the-residual-simplified-decomposition",
+    "href": "skript/05-trend-saison.html#calculating-the-residual-simplified-decomposition",
+    "title": "5  5 Trend & Season",
+    "section": "6.4 5.4 Calculating the Residual (Simplified Decomposition)",
+    "text": "6.4 5.4 Calculating the Residual (Simplified Decomposition)\nWe roughly remove the trend and seasonality:\n\nseason_map = s.index.hour.map(season_hour)\nresidual = s - trend_est - season_map\n\nresidual.plot(title=\"Residual (Simplified Decomposition)\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nWarning\n\n\n\nThis decomposition is didactically simplified.\nIn practice, more robust methods exist (e.g., STL).\nHere, the focus is on the principle.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Season</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#additive-vs-multiplicative-model",
+    "href": "skript/05-trend-saison.html#additive-vs-multiplicative-model",
+    "title": "5  5 Trend & Season",
+    "section": "6.5 5.5 Additive vs Multiplicative Model",
+    "text": "6.5 5.5 Additive vs Multiplicative Model\nAdditive model:\nSignal = Trend + Season + Noise\nMultiplicative model:\nSignal = Trend × Season × Noise\nMultiplicative models make sense\nwhen the amplitude of the season grows with the level.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Season</span>"
+    ]
+  },
+  {
+    "objectID": "skript/05-trend-saison.html#mini-exercises",
+    "href": "skript/05-trend-saison.html#mini-exercises",
+    "title": "5  5 Trend & Season",
+    "section": "6.6 5.6 Mini-Exercises",
+    "text": "6.6 5.6 Mini-Exercises\n\nIncrease the trend slope.\n\nHow does this affect the detection of the season?\n\nGenerate a weekly season (period length 7 days).\n\nHow would you make this visible?\n\nTest a very large rolling window (e.g., 120H).\n\nWhich structure remains?",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>5 Trend & Season</span>"
+    ]
+  },
+  {
+    "objectID": "skript/06-lags-autokorrelation.html#example-signal",
+    "href": "skript/06-lags-autokorrelation.html#example-signal",
+    "title": "6  6 Lags & Autocorrelation",
+    "section": "7.1 6.1 Example Signal",
+    "text": "7.1 6.1 Example Signal\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(21)\n\nt = pd.date_range(\"2025-01-01\", periods=24*14, freq=\"H\")\ntrend = np.linspace(0, 2, len(t))\nseason = 0.8 * np.sin(2*np.pi*(t.hour)/24)\nnoise = 0.4 * rng.normal(size=len(t))\n\ns = pd.Series(15 + trend + season + noise, index=t, name=\"signal\")\n\ns.plot(title=\"Example Signal\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_14212\\4251952496.py:7: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>6 Lags & Autocorrelation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/06-lags-autokorrelation.html#calculating-autocorrelation",
+    "href": "skript/06-lags-autokorrelation.html#calculating-autocorrelation",
+    "title": "6  6 Lags & Autocorrelation",
+    "section": "7.3 6.3 Calculating Autocorrelation",
+    "text": "7.3 6.3 Calculating Autocorrelation\nAutocorrelation measures the correlation between y(t) and y(t-k).\n\nPandasNumPy (Principle)\n\n\n\nlags = range(1, 49)\nac = [s.corr(s.shift(k)) for k in lags]\n\nplt.stem(list(lags), ac)\nplt.title(\"Autocorrelation (1–48 hours)\")\nplt.xlabel(\"Lag (h)\")\nplt.ylabel(\"Correlation\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\ny = s.to_numpy()\ny = y - np.nanmean(y)\n\ndef autocorr(y, k):\n    return np.corrcoef(y[:-k], y[k:])[0,1]\n\nlags = range(1, 49)\nac_np = [autocorr(y, k) for k in lags]\n\nplt.stem(list(lags), ac_np)\nplt.title(\"Autocorrelation (NumPy)\")\nplt.xlabel(\"Lag\")\nplt.ylabel(\"Correlation\")\nplt.show()",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>6 Lags & Autocorrelation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/06-lags-autokorrelation.html#interpretation-of-autocorrelation",
+    "href": "skript/06-lags-autokorrelation.html#interpretation-of-autocorrelation",
+    "title": "6  6 Lags & Autocorrelation",
+    "section": "7.4 6.4 Interpretation of Autocorrelation",
+    "text": "7.4 6.4 Interpretation of Autocorrelation\nTypical patterns:\n\nSlowly decreasing curve → strong trend\nPeriodic peaks (e.g., at 24, 48, 72) → seasonality\nRapid drop toward 0 → weak dependence\n\n\n\n\n\n\n\n\nWarning\n\n\n\nA trend can artificially increase autocorrelation.\nIf necessary, first detrend or difference the series.",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>6 Lags & Autocorrelation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/06-lags-autokorrelation.html#mini-exercises",
+    "href": "skript/06-lags-autokorrelation.html#mini-exercises",
+    "title": "6  6 Lags & Autocorrelation",
+    "section": "7.5 6.5 Mini Exercises",
+    "text": "7.5 6.5 Mini Exercises\n\nRemove the trend (e.g., using a rolling mean).\n\nHow does the autocorrelation change?\n\nCreate a time series without seasonality.\n\nWhat does the autocorrelation function look like?\n\nGenerate purely random data.\n\nWhat do you expect?",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>6 Lags & Autocorrelation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#example-signal-with-outliers",
+    "href": "skript/07-anomalien.html#example-signal-with-outliers",
+    "title": "7  7 Anomalies",
+    "section": "8.1 7.1 Example Signal with Outliers",
+    "text": "8.1 7.1 Example Signal with Outliers\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(99)\n\nt = pd.date_range(\"2025-01-01\", periods=24*10, freq=\"H\")\ntrend = np.linspace(0, 2, len(t))\nseason = 0.8 * np.sin(2*np.pi*(t.hour)/24)\nnoise = 0.3 * rng.normal(size=len(t))\n\ns = pd.Series(10 + trend + season + noise, index=t, name=\"signal\")\n\n# artificial anomalies\ns.iloc[40] += 4\ns.iloc[120] -= 3\n\ns.plot(title=\"Signal with Anomalies\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_8320\\132505960.py:7: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalies</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#global-z-score-method",
+    "href": "skript/07-anomalien.html#global-z-score-method",
+    "title": "7  7 Anomalies",
+    "section": "8.2 7.2 Global Z-Score Method",
+    "text": "8.2 7.2 Global Z-Score Method\nWe standardize the entire time series.\n\nPandasNumPy\n\n\n\nz = (s - s.mean()) / s.std()\nanomalies = s[abs(z) &gt; 3]\n\nax = s.plot(label=\"Signal\")\nanomalies.plot(ax=ax, linestyle=\"None\", marker=\"o\", label=\"Anomaly\")\nplt.legend()\nplt.title(\"Anomalies (Z-Score)\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\ny = s.to_numpy()\n\nz_np = (y - np.mean(y)) / np.std(y)\nanomalies_idx = np.where(np.abs(z_np) &gt; 3)[0]\n\nplt.plot(y, label=\"Signal\")\nplt.scatter(anomalies_idx, y[anomalies_idx], label=\"Anomaly\")\nplt.legend()\nplt.title(\"Anomalies (NumPy Z-Score)\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nWarning\n\n\n\nZ-score performs poorly when there is a strong trend or seasonality, because global means can become distorted.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalies</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#local-anomaly-baseline-residual",
+    "href": "skript/07-anomalien.html#local-anomaly-baseline-residual",
+    "title": "7  7 Anomalies",
+    "section": "8.3 7.3 Local Anomaly (Baseline + Residual)",
+    "text": "8.3 7.3 Local Anomaly (Baseline + Residual)\nInstead of global standardization, we define a local baseline.\n\nbaseline = s.ewm(span=24, adjust=False).mean()\nresidual = s - baseline\n\nscore = (residual - residual.mean()) / residual.std()\nanomalies_local = s[abs(score) &gt; 3]\n\nax = s.plot(alpha=0.6, label=\"Signal\")\nbaseline.plot(ax=ax, label=\"Baseline\")\nanomalies_local.plot(ax=ax, linestyle=\"None\", marker=\"o\", label=\"Anomaly\")\nplt.legend()\nplt.title(\"Local Anomalies (EWMA Baseline)\")\nplt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nInterpretation\n\n\n\nLocal methods are more robust when a trend or seasonality is present.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalies</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#rolling-standard-deviation",
+    "href": "skript/07-anomalien.html#rolling-standard-deviation",
+    "title": "7  7 Anomalies",
+    "section": "8.4 7.4 Rolling Standard Deviation",
+    "text": "8.4 7.4 Rolling Standard Deviation\nAnomalies can also be defined as strong deviations relative to the local variance.\n\nrolling_std = s.rolling(\"24H\").std()\nrolling_mean = s.rolling(\"24H\").mean()\n\nupper = rolling_mean + 3 * rolling_std\nlower = rolling_mean - 3 * rolling_std\n\nax = s.plot(label=\"Signal\")\nupper.plot(ax=ax, linestyle=\"--\", label=\"Upper Bound\")\nlower.plot(ax=ax, linestyle=\"--\", label=\"Lower Bound\")\nplt.legend()\nplt.title(\"Anomalies via Rolling Bounds\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_8320\\612637777.py:1: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_8320\\612637777.py:2: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalies</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#structural-break-vs-outlier",
+    "href": "skript/07-anomalien.html#structural-break-vs-outlier",
+    "title": "7  7 Anomalies",
+    "section": "8.5 7.5 Structural Break vs Outlier",
+    "text": "8.5 7.5 Structural Break vs Outlier\nA single peak → Outlier\nA permanent level shift → Structural Break\nBoth require different interpretation.\n\n\n\n\n\n\n\nMethodological Note\n\n\n\nBefore marking anomalies:\n\nCheck the trend\n\nCheck seasonality\n\nDefine the baseline\n\nJustify the threshold",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalies</span>"
+    ]
+  },
+  {
+    "objectID": "skript/07-anomalien.html#mini-exercises",
+    "href": "skript/07-anomalien.html#mini-exercises",
+    "title": "7  7 Anomalies",
+    "section": "8.6 7.6 Mini-Exercises",
+    "text": "8.6 7.6 Mini-Exercises\n\nRemove the trend before applying the Z-score.\n\nHow does the result change?\n\nLower the threshold from 3 to 2.\n\nWhat happens?\n\nSimulate a permanent level jump.\n\nIs it detected as an anomaly?",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>7 Anomalies</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#example-time-series",
+    "href": "skript/08-forecasting-baselines.html#example-time-series",
+    "title": "8  8 Forecasting Baselines & Evaluation",
+    "section": "9.1 8.1 Example Time Series",
+    "text": "9.1 8.1 Example Time Series\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\nrng = np.random.default_rng(123)\n\nt = pd.date_range(\"2025-01-01\", periods=24*14, freq=\"H\")\ntrend = np.linspace(0, 2, len(t))\nseason = 0.9 * np.sin(2*np.pi*(t.hour)/24)\nnoise = 0.3 * rng.normal(size=len(t))\n\ns = pd.Series(20 + trend + season + noise, index=t, name=\"signal\")\n\ns.plot(title=\"Time Series for Forecasting\")\nplt.show()\n\nC:\\Users\\User\\AppData\\Local\\Temp\\ipykernel_3656\\2545440261.py:7: FutureWarning:\n\n'H' is deprecated and will be removed in a future version, please use 'h' instead.",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting Baselines & Evaluation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#seasonal-naive-24-hours",
+    "href": "skript/08-forecasting-baselines.html#seasonal-naive-24-hours",
+    "title": "8  8 Forecasting Baselines & Evaluation",
+    "section": "9.4 8.4 Seasonal Naive (24 Hours)",
+    "text": "9.4 8.4 Seasonal Naive (24 Hours)\nNext value = value from 24 hours ago.\n\nPandasNumPy\n\n\n\nseasonal_naive = s.shift(24).iloc[split:]\n\n\n\n\nseasonal_naive_np = y[split-24:-24]",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting Baselines & Evaluation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#visualizing-comparison",
+    "href": "skript/08-forecasting-baselines.html#visualizing-comparison",
+    "title": "8  8 Forecasting Baselines & Evaluation",
+    "section": "9.6 8.6 Visualizing Comparison",
+    "text": "9.6 8.6 Visualizing Comparison\n\nplt.figure()\ntrain.plot(label=\"Train\")\ntest.plot(label=\"Test\")\nnaive.plot(label=\"Naive\")\nseasonal_naive.plot(label=\"Seasonal Naive\")\nma_forecast.plot(label=\"MA(24)\")\nplt.legend()\nplt.title(\"Forecast Baselines\")\nplt.show()",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting Baselines & Evaluation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#error-metrics",
+    "href": "skript/08-forecasting-baselines.html#error-metrics",
+    "title": "8  8 Forecasting Baselines & Evaluation",
+    "section": "9.7 8.7 Error Metrics",
+    "text": "9.7 8.7 Error Metrics\nWe use the Mean Absolute Error (MAE):\n[ MAE = |y_{true} - y_{pred}| ]\n\nPandasNumPy\n\n\n\ndef mae(y_true, y_pred):\n    return np.mean(np.abs(y_true - y_pred))\n\nprint(\"MAE Naive:\", mae(test, naive))\nprint(\"MAE Seasonal Naive:\", mae(test, seasonal_naive))\nprint(\"MAE MA(24):\", mae(test, ma_forecast))\n\nMAE Naive: 0.6298837368696829\nMAE Seasonal Naive: 0.3320412574311427\nMAE MA(24): 0.6228787570177815\n\n\n\n\n\ndef mae_np(y_true, y_pred):\n    return np.mean(np.abs(y_true - y_pred))\n\nprint(\"MAE Naive:\", mae_np(test_np, naive_np))\nprint(\"MAE Seasonal:\", mae_np(test_np, seasonal_naive_np))\nprint(\"MAE MA(24):\", mae_np(test_np, ma_forecast_np))\n\nMAE Naive: 0.6298837368696829\nMAE Seasonal: 0.3320412574311427\nMAE MA(24): 0.6228787570177815",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting Baselines & Evaluation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/08-forecasting-baselines.html#mini-exercises",
+    "href": "skript/08-forecasting-baselines.html#mini-exercises",
+    "title": "8  8 Forecasting Baselines & Evaluation",
+    "section": "9.9 8.9 Mini Exercises",
+    "text": "9.9 8.9 Mini Exercises\n\nIncrease the strength of the seasonality.\n\nWhich baseline performs best?\n\nRemove the seasonality entirely.\n\nWhich baseline performs better?\n\nAdd a strong trend.\n\nHow do the models respond?",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>8 Forecasting Baselines & Evaluation</span>"
+    ]
+  },
+  {
+    "objectID": "skript/09-lernzielkontrolle.html#technical-competencies",
+    "href": "skript/09-lernzielkontrolle.html#technical-competencies",
+    "title": "9  9 Learning Objectives Check",
+    "section": "10.1 9.1 Technical Competencies",
+    "text": "10.1 9.1 Technical Competencies\nI can …\n\nmethodically classify a time series (measurement process, sampling rate).\nvalidate a time series (sorting, duplicates, missing values).\napply resampling appropriately (aggregation vs. interpolation).\ndistinguish between Rolling Mean and EWMA and choose appropriately.\nconceptually separate trend and seasonality.\ngenerate and interpret lag features.\ninterpret autocorrelation.\ndefine anomalies globally and locally.\nimplement baseline forecasts.\nevaluate forecast models using MAE.",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>9 Learning Objectives Check</span>"
+    ]
+  },
+  {
+    "objectID": "skript/09-lernzielkontrolle.html#comprehension-questions",
+    "href": "skript/09-lernzielkontrolle.html#comprehension-questions",
+    "title": "9  9 Learning Objectives Check",
+    "section": "10.2 9.2 Comprehension Questions",
+    "text": "10.2 9.2 Comprehension Questions\n\nWhy is the sampling rate crucial for interpreting seasonality?\nWhen is interpolation problematic?\nWhy can a trend artificially increase autocorrelation?\nWhy are baselines methodologically important?\nHow does a structural break differ from an outlier?\n\n\n\n\n\n\n\n\nNote\n\n\n\nIf several points are unclear, review the corresponding chapters and work on the exercises.",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>9 Learning Objectives Check</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#task-1-generate-your-own-time-series",
+    "href": "skript/10-uebung.html#task-1-generate-your-own-time-series",
+    "title": "10  Exercise 10: Time Series Workflow",
+    "section": "11.1 Task 1: Generate Your Own Time Series",
+    "text": "11.1 Task 1: Generate Your Own Time Series\nCreate a time series with:\n\n10 days, hourly frequency\nTrend\nDaily seasonality\nNoise\nAt least 3 anomalies\n\nVisualize the time series.",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Exercise 10: Time Series Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#task-2-validation",
+    "href": "skript/10-uebung.html#task-2-validation",
+    "title": "10  Exercise 10: Time Series Workflow",
+    "section": "11.2 Task 2: Validation",
+    "text": "11.2 Task 2: Validation\nIntentionally introduce errors:\n\nDuplicates\nMissing values\nUnsorted timestamps\n\nImplement a proper validation.",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Exercise 10: Time Series Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#task-3-resampling",
+    "href": "skript/10-uebung.html#task-3-resampling",
+    "title": "10  Exercise 10: Time Series Workflow",
+    "section": "11.3 Task 3: Resampling",
+    "text": "11.3 Task 3: Resampling\n\nAggregate to daily averages.\nCompare original and aggregated series.\nInterpret the information loss.",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Exercise 10: Time Series Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#task-4-smoothing",
+    "href": "skript/10-uebung.html#task-4-smoothing",
+    "title": "10  Exercise 10: Time Series Workflow",
+    "section": "11.4 Task 4: Smoothing",
+    "text": "11.4 Task 4: Smoothing\n\nTest rolling windows of 6H, 24H, 72H.\nWhat structure becomes visible in each case?",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Exercise 10: Time Series Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#task-5-anomalies",
+    "href": "skript/10-uebung.html#task-5-anomalies",
+    "title": "10  Exercise 10: Time Series Workflow",
+    "section": "11.5 Task 5: Anomalies",
+    "text": "11.5 Task 5: Anomalies\n\nImplement an EWMA baseline.\nDetect anomalies.\nVary the threshold.",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Exercise 10: Time Series Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/10-uebung.html#task-6-forecast-baselines",
+    "href": "skript/10-uebung.html#task-6-forecast-baselines",
+    "title": "10  Exercise 10: Time Series Workflow",
+    "section": "11.6 Task 6: Forecast Baselines",
+    "text": "11.6 Task 6: Forecast Baselines\n\nTrain-test split (80/20)\nNaive\nSeasonal Naive (24H)\nMA(24)\n\nCompare the MAE values and interpret the results.\n\n\n\n\n\n\n\nSubmission Format (optional)\n\n\n\nPlots + brief interpretation (bullet points).",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Exercise 10: Time Series Workflow</span>"
+    ]
+  },
+  {
+    "objectID": "skript/11-klausurfragen.html#conceptual-questions",
+    "href": "skript/11-klausurfragen.html#conceptual-questions",
+    "title": "11  11 Exam Questions",
+    "section": "12.1 Conceptual Questions",
+    "text": "12.1 Conceptual Questions\n\nDefine a time series.\nWhat is the difference between aggregation and interpolation?\nExplain rolling mean and EWMA conceptually.\nWhat is a lag feature?\nWhat does autocorrelation measure?\nWhy can a trend affect autocorrelation?\nExplain the difference between global and local anomaly detection.\nWhat is a forecast baseline?\nWhy are baselines methodologically necessary?\nWhat does MAE measure?",
+    "crumbs": [
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>11 Exam Questions</span>"
+    ]
+  },
+  {
+    "objectID": "skript/11-klausurfragen.html#application-questions",
+    "href": "skript/11-klausurfragen.html#application-questions",
+    "title": "11  11 Exam Questions",
+    "section": "12.2 Application Questions",
+    "text": "12.2 Application Questions\n\nYou receive machine data with a strong weekly pattern.\n\nWhat steps would you take?\n\nA time series suddenly shows permanently higher values.\n\nOutlier or structural break? Justify your answer.\n\nTwo time series need to be compared, one measured every minute, the other hourly.\n\nWhat steps are necessary?\n\n\n\n\n\n\n\n\n\nExam Preparation Note\n\n\n\nAlways justify your answers methodologically. Pure definitions are usually not sufficient.",
+    "crumbs": [
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>11 Exam Questions</span>"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Zeitreihenanalyse",
+    "section": "",
+    "text": "Preamble",
+    "crumbs": [
+      "Preamble"
+    ]
+  },
+  {
+    "objectID": "index.html#prerequisites",
+    "href": "index.html#prerequisites",
+    "title": "Zeitreihenanalyse",
+    "section": "Prerequisites",
+    "text": "Prerequisites\n\nPython Basics\nNumPy (Arrays, basic operations)\nMatplotlib (Visualization)\nBasic understanding of Pandas (Series, DataFrame)",
+    "crumbs": [
+      "Preamble"
+    ]
+  },
+  {
+    "objectID": "index.html#packages-and-datasets-used",
+    "href": "index.html#packages-and-datasets-used",
+    "title": "Zeitreihenanalyse",
+    "section": "Packages and Datasets Used",
+    "text": "Packages and Datasets Used\n\nPackages\n\nNumPy\nMatplotlib\nPandas\n\n\n\nDatasets",
+    "crumbs": [
+      "Preamble"
+    ]
+  },
+  {
+    "objectID": "index.html#estimated-time",
+    "href": "index.html#estimated-time",
+    "title": "Zeitreihenanalyse",
+    "section": "Estimated Time",
+    "text": "Estimated Time\nEstimated completion time: 2 hours",
+    "crumbs": [
+      "Preamble"
+    ]
+  },
+  {
+    "objectID": "index.html#learning-objectives",
+    "href": "index.html#learning-objectives",
+    "title": "Zeitreihenanalyse",
+    "section": "Learning Objectives",
+    "text": "Learning Objectives\n\nPreprocess time series in a structured way (time index, missing values, outliers)\nApply resampling and alignment methodically and correctly\nChoose smoothing techniques appropriate for the question at hand\nIdentify and interpret trend and seasonal components\nDiagnose temporal dependencies using lag/autocorrelation\nDetect anomalies using simple, explainable rules\nImplement forecast baselines and evaluate them with error metrics",
+    "crumbs": [
+      "Preamble"
+    ]
+  }
+]

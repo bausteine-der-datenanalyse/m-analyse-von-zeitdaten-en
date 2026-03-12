@@ -1,0 +1,146 @@
+---
+title: "1 Classification: Time Series as a Measurement Process"
+---
+
+# 1 Classification: Time Series as a Measurement Process
+
+A time series is the result of a **measurement process over time**.
+
+Typical examples:
+
+-   Sensor data
+-   Energy consumption
+-   Web traffic
+-   Financial data
+-   Machine data in production processes
+
+What matters is not only the numerical value itself, but also:
+
+-   **Sampling rate** (hourly, minute-level, irregular?)
+-   **Measurement quality**
+-   **Structural patterns** (trend, periodicity)
+-   **Disturbances** (noise, outliers)
+
+::: {.callout-note title="Remember"}
+Time series analysis does not start with a model, but with an
+understanding of the measurement process.
+:::
+
+## 1.1 Creating a Working Dataset
+
+We create a synthetic time series with:
+
+-   Trend\
+-   Daily periodicity\
+-   Noise\
+-   Outliers
+
+This structure is typical for real-world technical measurement data.
+
+::: panel-tabset
+## Pandas (recommended)
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(42)
+
+# Time index: 14 days, hourly measurements
+t = pd.date_range("2025-01-01", periods=24*14, freq="H")
+
+trend = np.linspace(0, 3, len(t))
+season = 0.8 * np.sin(2*np.pi*(t.hour)/24)
+noise = 0.25 * rng.normal(size=len(t))
+
+y = 10 + trend + season + noise
+y = pd.Series(y, index=t, name="signal")
+
+# artificial outliers
+y.iloc[50] += 3.5
+y.iloc[120] -= 2.8
+
+y.plot()
+plt.title("Time Series (Trend + Seasonality + Noise)")
+plt.xlabel("Time")
+plt.ylabel("Value")
+plt.show()
+```
+
+## NumPy (Principle)
+
+Here we model time as a simple sample index.
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(42)
+
+n = 24*14
+x = np.arange(n)
+
+trend = np.linspace(0, 3, n)
+season = 0.8 * np.sin(2*np.pi*(x % 24)/24)
+noise = 0.25 * rng.normal(size=n)
+
+y = 10 + trend + season + noise
+
+# Outliers
+y[50] += 3.5
+y[120] -= 2.8
+
+plt.plot(y)
+plt.title("Time series (NumPy, without time index)")
+plt.xlabel("Sample")
+plt.ylabel("Value")
+plt.show()
+```
+
+:::
+
+## 1.2 Typical Analysis Questions
+
+In time series analysis, similar questions arise repeatedly:
+
+-   Is there a **trend**?
+-   Does a **periodicity** exist (e.g., daily or weekly patterns)?
+-   How strong is the **noise**?
+-   Are there **anomalies**?
+-   How can future values be roughly estimated?
+
+::: {.callout-tip title="Methodological Perspective"}
+Before smoothing or modeling:
+
+1.  Visualize  
+2.  Check the time scale  
+3.  Identify the structure  
+4.  Only then continue with further analysis  
+:::
+
+## 1.3 Structural Model of a Time Series
+
+A time series can often be conceptually represented as:
+
+Signal = Trend + Seasonality + Noise + Outliers
+
+This decomposition is not a physical law, but rather a
+**conceptual model** that helps analyze patterns systematically.
+
+::: {.callout-warning title="Attention"}
+Not every recurring pattern is automatically “seasonality”.  
+Regularity must plausibly match the sampling rate and the underlying process.
+:::
+
+## 1.4 Mini Reflection
+
+Answer the following:
+
+1.  Which periodicity was modeled here?
+2.  What role does the sampling rate play?
+3.  Would daily aggregation make the seasonal component visible or
+    invisible?
+4.  How would outliers behave under strong smoothing?
+
+These questions will accompany us throughout the entire methods module.

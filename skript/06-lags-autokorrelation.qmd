@@ -1,0 +1,164 @@
+---
+title: "6 Lags & Autocorrelation"
+---
+
+# 6 Lags & Autocorrelation
+
+Time series differ from classical datasets
+because observations are **not independent**.
+
+The value at time t often depends on previous values.
+
+We examine this temporal dependence using:
+
+- **Lags**
+- **Autocorrelation**
+
+---
+
+::: {.callout-note title="Note"}
+Temporal dependence is a core feature of time series.
+Without it, meaningful forecasting would not be possible.
+:::
+
+---
+
+## 6.1 Example Signal
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(21)
+
+t = pd.date_range("2025-01-01", periods=24*14, freq="H")
+trend = np.linspace(0, 2, len(t))
+season = 0.8 * np.sin(2*np.pi*(t.hour)/24)
+noise = 0.4 * rng.normal(size=len(t))
+
+s = pd.Series(15 + trend + season + noise, index=t, name="signal")
+
+s.plot(title="Example Signal")
+plt.show()
+```
+
+---
+
+## 6.2 Lag Features
+
+A lag shifts the time series backward.
+
+::: {.panel-tabset}
+
+## Pandas
+
+```{python}
+lag_1h = s.shift(1)
+lag_24h = s.shift(24)
+
+df_lags = pd.DataFrame({
+    "y": s,
+    "lag_1h": lag_1h,
+    "lag_24h": lag_24h
+})
+
+df_lags.head()
+```
+
+## NumPy (Concept)
+
+```{python}
+y = s.to_numpy()
+
+lag1 = np.roll(y, 1)
+lag24 = np.roll(y, 24)
+
+lag1[0] = np.nan
+lag24[:24] = np.nan
+```
+
+:::
+
+---
+
+::: {.callout-tip title="Interpretation"}
+A high correlation between y(t) and y(t-24)
+indicates a daily periodicity.
+:::
+
+---
+
+## 6.3 Calculating Autocorrelation
+
+Autocorrelation measures the correlation between
+y(t) and y(t-k).
+
+::: {.panel-tabset}
+
+## Pandas
+
+```{python}
+lags = range(1, 49)
+ac = [s.corr(s.shift(k)) for k in lags]
+
+plt.stem(list(lags), ac)
+plt.title("Autocorrelation (1–48 hours)")
+plt.xlabel("Lag (h)")
+plt.ylabel("Correlation")
+plt.show()
+```
+
+## NumPy (Principle)
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+y = s.to_numpy()
+y = y - np.nanmean(y)
+
+def autocorr(y, k):
+    return np.corrcoef(y[:-k], y[k:])[0,1]
+
+lags = range(1, 49)
+ac_np = [autocorr(y, k) for k in lags]
+
+plt.stem(list(lags), ac_np)
+plt.title("Autocorrelation (NumPy)")
+plt.xlabel("Lag")
+plt.ylabel("Correlation")
+plt.show()
+```
+
+:::
+
+---
+
+## 6.4 Interpretation of Autocorrelation
+
+Typical patterns:
+
+- Slowly decreasing curve → strong trend
+- Periodic peaks (e.g., at 24, 48, 72) → seasonality
+- Rapid drop toward 0 → weak dependence
+
+---
+
+::: {.callout-warning title="Warning"}
+A trend can artificially increase autocorrelation.  
+If necessary, first detrend or difference the series.
+:::
+
+---
+
+## 6.5 Mini Exercises
+
+1. Remove the trend (e.g., using a rolling mean).  
+   - How does the autocorrelation change?
+
+2. Create a time series without seasonality.  
+   - What does the autocorrelation function look like?
+
+3. Generate purely random data.  
+   - What do you expect?

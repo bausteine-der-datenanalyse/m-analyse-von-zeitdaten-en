@@ -1,0 +1,56 @@
+# Preamble {.unnumbered}
+
+:::: {.border #License}
+
+::: {layout="[20, 80]" layout-valign="center"}
+![](https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png){fig-alt="Creative Commons BY license symbol"} 
+
+Building Blocks of Computer-Based Data Analysis. "Time Series Analysis" by Lukas Arnold, 
+Simone Arnold, Florian Bagemihl, Matthias Baitsch, Marc Fehr, Maik Poetzsch, and 
+Sebastian Seipel is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.en). 
+The work is available at <https://github.com/bausteine-der-datenanalyse/a-zeitreihenanalyse>. 
+Excluded from the license are all logos and other specially marked content. 2024
+
+:::
+
+Suggested Citation
+
+Arnold, Lukas, Simone Arnold, Matthias Baitsch, Marc Fehr, Maik Poetzsch, and 
+Sebastian Seipel. 2024. "Building Blocks of Computer-Based Data Analysis. 
+Module: Numerical Methods." <https://github.com/bausteine-der-datenanalyse/a-zeitreihenanalyse>.
+
+BibTeX Template
+
+```
+@misc{BCD-Styleguide-2024,
+  title={Building Blocks of Computer-Aided Data Analysis. Numerical Methods Module},
+  author={Arnold, Lukas and Arnold, Simone and Baitsch, Matthias and Fehr, Marc and Poetzsch, Maik and Seipel, Sebastian},
+  year={2024},
+  url={https://github.com/bausteine-der-datenanalyse/a-zeitreihenanalyse}
+}
+```
+
+::::
+
+
+# Introduction
+
+## Prerequisites
+{{< include voraussetzungen.md >}}
+
+## Packages and Datasets Used
+
+### Packages
+- [NumPy](https://numpy.org/)
+- [Matplotlib](https://matplotlib.org/)
+- [Pandas](https://pandas.pydata.org/)
+
+### Datasets
+
+
+## Estimated Time
+Estimated completion time: 2 hours
+
+## Learning Objectives
+
+{{< include lernziele.md >}}

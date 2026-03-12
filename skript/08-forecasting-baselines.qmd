@@ -1,0 +1,211 @@
+---
+title: "8 Forecasting Baselines & Evaluation"
+---
+
+# 8 Forecasting Baselines & Evaluation
+
+Before applying complex models, simple
+**baseline models** should always be defined.
+
+Baselines answer the question:
+
+> Is my model truly better than a simple, understandable strategy?
+
+---
+
+::: {.callout-note title="Note"}
+A complex model only makes sense
+if it clearly outperforms robust baselines.
+:::
+
+---
+
+## 8.1 Example Time Series
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(123)
+
+t = pd.date_range("2025-01-01", periods=24*14, freq="H")
+trend = np.linspace(0, 2, len(t))
+season = 0.9 * np.sin(2*np.pi*(t.hour)/24)
+noise = 0.3 * rng.normal(size=len(t))
+
+s = pd.Series(20 + trend + season + noise, index=t, name="signal")
+
+s.plot(title="Time Series for Forecasting")
+plt.show()
+```
+
+---
+
+## 8.2 Train-Test Split
+
+We use 80% of the data for training and 20% for testing.
+
+```{python}
+split = int(len(s) * 0.8)
+
+train = s.iloc[:split]
+test = s.iloc[split:]
+
+train.index.min(), train.index.max(), test.index.min(), test.index.max()
+```
+
+---
+
+## 8.3 Naive Forecast
+
+Next value = last observed value.
+
+::: {.panel-tabset}
+
+## Pandas
+
+```{python}
+naive = test.copy()
+naive[:] = train.iloc[-1]
+```
+
+## NumPy
+
+```{python}
+y = s.to_numpy()
+train_np = y[:split]
+test_np = y[split:]
+
+naive_np = np.full_like(test_np, train_np[-1])
+```
+
+:::
+
+---
+
+## 8.4 Seasonal Naive (24 Hours)
+
+Next value = value from 24 hours ago.
+
+::: {.panel-tabset}
+
+## Pandas
+
+```{python}
+seasonal_naive = s.shift(24).iloc[split:]
+```
+
+## NumPy
+
+```{python}
+seasonal_naive_np = y[split-24:-24]
+```
+
+:::
+
+---
+
+## 8.5 Moving Average Baseline
+
+Forecast = mean of the last 24 hours.
+
+::: {.panel-tabset}
+
+## Pandas
+
+```{python}
+ma_value = train.iloc[-24:].mean()
+ma_forecast = test.copy()
+ma_forecast[:] = ma_value
+```
+
+## NumPy
+
+```{python}
+ma_value_np = np.mean(train_np[-24:])
+ma_forecast_np = np.full_like(test_np, ma_value_np)
+```
+
+:::
+
+---
+
+## 8.6 Visualizing Comparison
+
+```{python}
+plt.figure()
+train.plot(label="Train")
+test.plot(label="Test")
+naive.plot(label="Naive")
+seasonal_naive.plot(label="Seasonal Naive")
+ma_forecast.plot(label="MA(24)")
+plt.legend()
+plt.title("Forecast Baselines")
+plt.show()
+```
+
+---
+
+## 8.7 Error Metrics
+
+We use the Mean Absolute Error (MAE):
+
+\[
+MAE = \frac{1}{n} \sum |y_{true} - y_{pred}|
+\]
+
+::: {.panel-tabset}
+
+## Pandas
+
+```{python}
+def mae(y_true, y_pred):
+    return np.mean(np.abs(y_true - y_pred))
+
+print("MAE Naive:", mae(test, naive))
+print("MAE Seasonal Naive:", mae(test, seasonal_naive))
+print("MAE MA(24):", mae(test, ma_forecast))
+```
+
+## NumPy
+
+```{python}
+def mae_np(y_true, y_pred):
+    return np.mean(np.abs(y_true - y_pred))
+
+print("MAE Naive:", mae_np(test_np, naive_np))
+print("MAE Seasonal:", mae_np(test_np, seasonal_naive_np))
+print("MAE MA(24):", mae_np(test_np, ma_forecast_np))
+```
+
+:::
+
+---
+
+## 8.8 Interpretation
+
+Typical observations:
+
+- With a strong seasonal pattern, Seasonal Naive often performs best.
+- With a weak pattern, Naive can be surprisingly strong.
+- Moving Average smooths the data but reacts slowly to trend changes.
+
+---
+
+::: {.callout-tip title="Methodological Note"}
+Comparing to a baseline is not a formality, but a quality check.
+:::
+
+---
+
+## 8.9 Mini Exercises
+
+1. Increase the strength of the seasonality.  
+   - Which baseline performs best?
+
+2. Remove the seasonality entirely.  
+   - Which baseline performs better?
+
+3. Add a strong trend.  
+   - How do the models respond?

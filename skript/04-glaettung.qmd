@@ -1,0 +1,186 @@
+---
+title: "4 Smoothing & Noise Reduction"
+---
+
+# 4 Smoothing & Noise Reduction
+
+Smoothing is one of the most important standard techniques in time series analysis.  
+It helps to:
+
+- reduce noise,  
+- make trends/seasonality more visible,  
+- define a **baseline** (e.g., for anomalies).  
+
+::: {.callout-note title="Note"}
+The window width is a methodological choice:  
+it should match the **time scale of the question** being investigated.
+:::
+
+## 4.1 Example Signal
+
+We use a time series with a daily pattern, noise, and individual outliers.
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(42)
+
+t = pd.date_range("2025-01-01", periods=24*10, freq="H")  # 10 days hourly
+trend = np.linspace(0, 2, len(t))
+season = 0.9 * np.sin(2*np.pi*(t.hour)/24)
+noise = 0.35 * rng.normal(size=len(t))
+
+s = pd.Series(10 + trend + season + noise, index=t, name="signal")
+
+# Outliers
+s.iloc[30] += 3.0
+s.iloc[120] -= 2.5
+
+s.plot(title="Example Signal (raw)")
+plt.show()
+```
+
+## 4.2 Rolling Mean
+
+The rolling mean is the classic smoothing method: the average over a window.
+
+::: {.panel-tabset}
+
+## Pandas (recommended)
+
+```{python}
+roll_6h = s.rolling("6H").mean()
+roll_24h = s.rolling("24H").mean()
+
+ax = s.plot(alpha=0.45, label="Signal")
+roll_6h.plot(ax=ax, label="Rolling 6H")
+roll_24h.plot(ax=ax, label="Rolling 24H")
+plt.legend()
+plt.title("Rolling Mean (Pandas)")
+plt.show()
+```
+
+::: {.callout-tip title="Decision aid"}
+- **6H**: reduces short-term noise, events remain visible
+- **24H**: shows basic level/trend, strongly dampens daily patterns
+:::
+
+## NumPy (principle)
+
+NumPy variant: moving average as convolution (`convolve`).
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+y = s.to_numpy()
+
+def moving_average(y, window):
+    kernel = np.ones(window) / window
+    return np.convolve(y, kernel, mode="same")
+
+ma_6 = moving_average(y, 6)
+ma_24 = moving_average(y, 24)
+
+plt.plot(y, alpha=0.45, label="Signal")
+plt.plot(ma_6, label="MA 6 Samples")
+plt.plot(ma_24, label="MA 24 Samples")
+plt.legend()
+plt.title("Moving Average (NumPy)")
+plt.xlabel("Sample")
+plt.ylabel("Value")
+plt.show()
+```
+
+::: {.callout-warning title="Attention"}
+When convolving, you must consciously accept edge handling (here: `mode=“same”`).
+Pandas handles edge areas consistently with `min_periods` and NaNs.
+:::
+
+:::
+
+## 4.3 EWMA (Exponentially Weighted Moving Average)
+
+EWMA smooths, but **weights newer values more heavily**.
+
+::: {.panel-tabset}
+
+## Pandas (recommended)
+
+
+```{python}
+ewm_fast = s.ewm(span=6, adjust=False).mean()
+ewm_slow = s.ewm(span=24, adjust=False).mean()
+
+ax = s.plot(alpha=0.45, label="Signal")
+ewm_fast.plot(ax=ax, label="EWMA span=6")
+ewm_slow.plot(ax=ax, label="EWMA span=24")
+plt.legend()
+plt.title("EWMA (Pandas)")
+plt.show()
+```
+
+::: {.callout-note title="Note"}
+EWMA reacts faster to changes than a rolling mean,
+because older values have exponentially less influence.
+:::
+
+## NumPy (Concept)
+
+EWMA can be calculated recursively:
+
+\[
+m_t = \alpha \cdot y_t + (1-\alpha)\cdot m_{t-1}
+\]
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+y = s.to_numpy()
+
+def ewma(y, alpha):
+    m = np.empty_like(y, dtype=float)
+    m[0] = y[0]
+    for i in range(1, len(y)):
+        m[i] = alpha * y[i] + (1 - alpha) * m[i-1]
+    return m
+
+m_fast = ewma(y, alpha=0.30)
+m_slow = ewma(y, alpha=0.08)
+
+plt.plot(y, alpha=0.45, label="Signal")
+plt.plot(m_fast, label="EWMA alpha=0.30")
+plt.plot(m_slow, label="EWMA alpha=0.08")
+plt.legend()
+plt.title("EWMA (NumPy)")
+plt.xlabel("Sample")
+plt.ylabel("Value")
+plt.show()
+```
+
+:::
+
+## 4.4 Method Choice: Which Approach When?
+
+::: {.callout-tip title="Decision Aid"}
+**Rolling Mean** is suitable when…  
+- You want to average over a clearly defined time window (e.g., "last 24 hours").
+
+**EWMA** is suitable when…  
+- You want a smooth baseline that reacts more quickly to changes.  
+- You want to detect anomalies as deviations from a dynamic baseline.
+:::
+
+## 4.5 Mini-Exercises
+
+1. **Window Selection:** Test rolling windows of 3H, 12H, 48H.  
+   - Which structures become visible or disappear in each case?
+
+2. **Anomalies & Smoothing:** Increase the outlier amplitude.  
+   - At what smoothing strength does the outlier "disappear" in the smoothed signal?
+
+3. **EWMA Sensitivity:** Vary `span` (Pandas) or `alpha` (NumPy).  
+   - Which parameters respond "quickly" and which "slowly"? Explain why.

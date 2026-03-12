@@ -1,0 +1,138 @@
+---
+title: 3 Resampling & Alignment
+---
+
+# 3 Resampling & Alignment
+
+Time series often come at different sampling rates or
+need to be transformed to a different time scale.
+
+Common reasons:
+
+-   Comparing two time series
+-   Reducing noise through aggregation
+-   Adjusting to reporting intervals
+-   Preparing for modeling
+
+------------------------------------------------------------------------
+
+::: {.callout-note title="Note"}
+Resampling means changing the time scale. You must decide
+between aggregation and interpolation.
+:::
+
+------------------------------------------------------------------------
+
+## 3.1 Original Time Series (Hourly)
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(2)
+
+t = pd.date_range("2025-01-01", periods=24*5, freq="H")
+y = pd.Series(10 + rng.normal(size=len(t)), index=t, name="signal")
+
+y.plot(title="Hourly Time Series")
+plt.show()
+```
+
+------------------------------------------------------------------------
+
+## 3.2 Downsampling (Aggregation)
+
+We aggregate from hours to days.
+
+``` {python}
+daily_mean = y.resample("D").mean()
+daily_max = y.resample("D").max()
+
+ax = daily_mean.plot(marker="o", label="Daily Mean")
+daily_max.plot(ax=ax, marker="o", label="Daily Maximum")
+plt.legend()
+plt.title("Downsampling: Hours → Days")
+plt.show()
+```
+
+------------------------------------------------------------------------
+
+::: {.callout-tip title="Decision Guide"}
+-   Mean → smooths out fluctuations\
+-   Maximum → highlights extreme values\
+-   Sum → useful for quantities (e.g., energy consumption)
+:::
+
+------------------------------------------------------------------------
+
+## 3.3 Upsampling (Interpolation)
+
+We increase the temporal resolution.
+
+``` {python}
+y_2h = y.resample("2H").mean()
+y_up = y_2h.resample("H").interpolate("time")
+
+ax = y_2h.plot(marker="o", label="2H (aggregated)")
+y_up.plot(ax=ax, alpha=0.7, label="Interpolated to 1H")
+plt.legend()
+plt.title("Upsampling with Interpolation")
+plt.show()
+```
+
+------------------------------------------------------------------------
+
+::: {.callout-warning title="Warning"}
+Interpolation does not generate new measurement data; it only models
+a plausible progression.
+:::
+
+------------------------------------------------------------------------
+
+## 3.4 Alignment of Two Time Series
+
+Two time series with different sampling rates:
+
+``` {python}
+t2 = pd.date_range("2025-01-01", periods=24*5, freq="2H")
+y2 = pd.Series(5 + rng.normal(size=len(t2)), index=t2, name="signal2")
+```
+
+For joint analysis, both series must have the same frequency.
+
+``` {python}
+y2_aligned = y2.resample("H").interpolate("time")
+
+df = pd.concat([y, y2_aligned], axis=1)
+
+df.plot(title="Aligned Time Series")
+plt.show()
+```
+
+------------------------------------------------------------------------
+
+::: {.callout-note title="Note"}
+Alignment means: - same frequency - same time span - same
+time zone
+:::
+
+------------------------------------------------------------------------
+
+## 3.5 Common Sources of Error
+
+-   Comparisons without prior resampling
+-   Mixing local time and UTC
+-   Aggregation without considering data types (e.g., sum vs
+    mean)
+
+------------------------------------------------------------------------
+
+## 3.6 Mini Exercise
+
+1.  Generate a minute-level time series over 2 days.
+2.  Aggregate to hourly averages.
+3.  Compare visually:
+    -   Original
+    -   Hourly averages
+4.  Interpret the loss of information.

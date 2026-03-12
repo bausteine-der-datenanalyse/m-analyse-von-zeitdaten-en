@@ -1,0 +1,7 @@
+- Preprocess time series in a structured way (time index, missing values, outliers)
+- Apply resampling and alignment methodically and correctly
+- Choose smoothing techniques appropriate for the question at hand
+- Identify and interpret trend and seasonal components
+- Diagnose temporal dependencies using lag/autocorrelation
+- Detect anomalies using simple, explainable rules
+- Implement forecast baselines and evaluate them with error metrics

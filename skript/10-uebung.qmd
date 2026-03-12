@@ -1,0 +1,73 @@
+---
+title: "Exercise 10: Time Series Workflow"
+---
+
+# Exercise 10: Time Series Workflow
+
+This exercise combines several methods from the module.
+
+---
+
+## Task 1: Generate Your Own Time Series
+
+Create a time series with:
+
+- 10 days, hourly frequency
+- Trend
+- Daily seasonality
+- Noise
+- At least 3 anomalies
+
+Visualize the time series.
+
+---
+
+## Task 2: Validation
+
+Intentionally introduce errors:
+
+- Duplicates
+- Missing values
+- Unsorted timestamps
+
+Implement a proper validation.
+
+---
+
+## Task 3: Resampling
+
+- Aggregate to daily averages.
+- Compare original and aggregated series.
+- Interpret the information loss.
+
+---
+
+## Task 4: Smoothing
+
+- Test rolling windows of 6H, 24H, 72H.
+- What structure becomes visible in each case?
+
+---
+
+## Task 5: Anomalies
+
+- Implement an EWMA baseline.
+- Detect anomalies.
+- Vary the threshold.
+
+---
+
+## Task 6: Forecast Baselines
+
+- Train-test split (80/20)
+- Naive
+- Seasonal Naive (24H)
+- MA(24)
+
+Compare the MAE values and interpret the results.
+
+---
+
+::: {.callout-note title="Submission Format (optional)"}
+Plots + brief interpretation (bullet points).
+:::

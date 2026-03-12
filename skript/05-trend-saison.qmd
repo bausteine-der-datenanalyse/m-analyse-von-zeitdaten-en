@@ -1,0 +1,152 @@
+---
+title: "5 Trend & Season"
+---
+
+# 5 Trend & Season
+
+Many time series contain systematic structures:
+
+- **Trend**: long-term development (increasing/decreasing)
+- **Season**: periodically recurring pattern
+- **Residual**: remaining fluctuation
+
+This decomposition is a **conceptual model** that helps to systematically analyze structure.
+
+---
+
+::: {.callout-note title="Note"}
+Trend describes a slow change,  
+Season describes a regular repetition.
+:::
+
+---
+
+## 5.1 Example Signal
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(10)
+
+t = pd.date_range("2025-01-01", periods=24*14, freq="H")
+trend = np.linspace(0, 4, len(t))
+season = 1.2 * np.sin(2*np.pi*(t.hour)/24)
+noise = 0.4 * rng.normal(size=len(t))
+
+s = pd.Series(20 + trend + season + noise, index=t, name="signal")
+
+s.plot(title="Signal with Trend and Daily Season")
+plt.show()
+```
+
+---
+
+## 5.2 Visualizing the Season
+
+### Hourly Average
+
+```{python}
+season_hour = s.groupby(s.index.hour).mean()
+
+season_hour.plot(marker="o")
+plt.title("Average Daily Profile (0–23h)")
+plt.xlabel("Hour")
+plt.ylabel("Average")
+plt.show()
+```
+
+::: {.callout-tip title="Interpretation"}
+A periodic pattern in this visualization suggests a daily seasonality.
+:::
+
+---
+
+## 5.3 Estimating the Trend (Strong Smoothing)
+
+::: {.panel-tabset}
+
+## Pandas
+
+```{python}
+trend_est = s.rolling("72H").mean()
+
+ax = s.plot(alpha=0.4, label="Signal")
+trend_est.plot(ax=ax, linewidth=2, label="Trend (Rolling 72H)")
+plt.legend()
+plt.title("Trend Estimation")
+plt.show()
+```
+
+## NumPy (Concept)
+
+```{python}
+import numpy as np
+
+y = s.to_numpy()
+
+def moving_average(y, window):
+    kernel = np.ones(window) / window
+    return np.convolve(y, kernel, mode="same")
+
+trend_np = moving_average(y, 72)
+
+plt.plot(y, alpha=0.4, label="Signal")
+plt.plot(trend_np, linewidth=2, label="Trend (MA 72)")
+plt.legend()
+plt.title("Trend Estimation (NumPy)")
+plt.show()
+```
+
+:::
+
+---
+
+## 5.4 Calculating the Residual (Simplified Decomposition)
+
+We roughly remove the trend and seasonality:
+
+```{python}
+season_map = s.index.hour.map(season_hour)
+residual = s - trend_est - season_map
+
+residual.plot(title="Residual (Simplified Decomposition)")
+plt.show()
+```
+
+---
+
+::: {.callout-warning title="Warning"}
+This decomposition is didactically simplified.  
+In practice, more robust methods exist (e.g., STL).  
+Here, the focus is on the principle.
+:::
+
+---
+
+## 5.5 Additive vs Multiplicative Model
+
+Additive model:
+
+Signal = Trend + Season + Noise
+
+Multiplicative model:
+
+Signal = Trend × Season × Noise
+
+Multiplicative models make sense  
+when the amplitude of the season grows with the level.
+
+---
+
+## 5.6 Mini-Exercises
+
+1. Increase the trend slope.  
+   - How does this affect the detection of the season?
+
+2. Generate a weekly season (period length 7 days).  
+   - How would you make this visible?
+
+3. Test a very large rolling window (e.g., 120H).  
+   - Which structure remains?
