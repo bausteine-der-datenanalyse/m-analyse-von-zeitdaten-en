@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 
 rng = np.random.default_rng(99)
 
-t = pd.date_range("2025-01-01", periods=24*10, freq="H")
+t = pd.date_range("2025-01-01", periods=24*10, freq="h")
 trend = np.linspace(0, 2, len(t))
 season = 0.8 * np.sin(2*np.pi*(t.hour)/24)
 noise = 0.3 * rng.normal(size=len(t))
@@ -128,8 +128,8 @@ Anomalies can also be defined as strong deviations
 relative to the local variance.
 
 ```{python}
-rolling_std = s.rolling("24H").std()
-rolling_mean = s.rolling("24H").mean()
+rolling_std = s.rolling("24h").std()
+rolling_mean = s.rolling("24h").mean()
 
 upper = rolling_mean + 3 * rolling_std
 lower = rolling_mean - 3 * rolling_std

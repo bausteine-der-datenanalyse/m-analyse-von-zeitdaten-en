@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 
 rng = np.random.default_rng(2)
 
-t = pd.date_range("2025-01-01", periods=24*5, freq="H")
+t = pd.date_range("2025-01-01", periods=24*5, freq="h")
 y = pd.Series(10 + rng.normal(size=len(t)), index=t, name="signal")
 
 y.plot(title="Hourly Time Series")
@@ -71,8 +71,8 @@ plt.show()
 We increase the temporal resolution.
 
 ``` {python}
-y_2h = y.resample("2H").mean()
-y_up = y_2h.resample("H").interpolate("time")
+y_2h = y.resample("2h").mean()
+y_up = y_2h.resample("h").interpolate("time")
 
 ax = y_2h.plot(marker="o", label="2H (aggregated)")
 y_up.plot(ax=ax, alpha=0.7, label="Interpolated to 1H")
@@ -95,14 +95,14 @@ a plausible progression.
 Two time series with different sampling rates:
 
 ``` {python}
-t2 = pd.date_range("2025-01-01", periods=24*5, freq="2H")
+t2 = pd.date_range("2025-01-01", periods=24*5, freq="2h")
 y2 = pd.Series(5 + rng.normal(size=len(t2)), index=t2, name="signal2")
 ```
 
 For joint analysis, both series must have the same frequency.
 
 ``` {python}
-y2_aligned = y2.resample("H").interpolate("time")
+y2_aligned = y2.resample("h").interpolate("time")
 
 df = pd.concat([y, y2_aligned], axis=1)
 

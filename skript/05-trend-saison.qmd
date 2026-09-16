@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 
 rng = np.random.default_rng(10)
 
-t = pd.date_range("2025-01-01", periods=24*14, freq="H")
+t = pd.date_range("2025-01-01", periods=24*14, freq="h")
 trend = np.linspace(0, 4, len(t))
 season = 1.2 * np.sin(2*np.pi*(t.hour)/24)
 noise = 0.4 * rng.normal(size=len(t))
@@ -70,7 +70,7 @@ A periodic pattern in this visualization suggests a daily seasonality.
 ## Pandas
 
 ```{python}
-trend_est = s.rolling("72H").mean()
+trend_est = s.rolling("72h").mean()
 
 ax = s.plot(alpha=0.4, label="Signal")
 trend_est.plot(ax=ax, linewidth=2, label="Trend (Rolling 72H)")

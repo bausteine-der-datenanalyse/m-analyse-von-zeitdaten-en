@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 
 rng = np.random.default_rng(21)
 
-t = pd.date_range("2025-01-01", periods=24*14, freq="H")
+t = pd.date_range("2025-01-01", periods=24*14, freq="h")
 trend = np.linspace(0, 2, len(t))
 season = 0.8 * np.sin(2*np.pi*(t.hour)/24)
 noise = 0.4 * rng.normal(size=len(t))

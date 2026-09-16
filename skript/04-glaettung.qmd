@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 
 rng = np.random.default_rng(42)
 
-t = pd.date_range("2025-01-01", periods=24*10, freq="H")  # 10 days hourly
+t = pd.date_range("2025-01-01", periods=24*10, freq="h")  # 10 days hourly
 trend = np.linspace(0, 2, len(t))
 season = 0.9 * np.sin(2*np.pi*(t.hour)/24)
 noise = 0.35 * rng.normal(size=len(t))
@@ -51,8 +51,8 @@ The rolling mean is the classic smoothing method: the average over a window.
 ## Pandas (recommended)
 
 ```{python}
-roll_6h = s.rolling("6H").mean()
-roll_24h = s.rolling("24H").mean()
+roll_6h = s.rolling("6h").mean()
+roll_24h = s.rolling("24h").mean()
 
 ax = s.plot(alpha=0.45, label="Signal")
 roll_6h.plot(ax=ax, label="Rolling 6H")
