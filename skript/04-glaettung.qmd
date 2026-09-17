@@ -131,9 +131,9 @@ because older values have exponentially less influence.
 
 EWMA can be calculated recursively:
 
-\[
+$$
 m_t = \alpha \cdot y_t + (1-\alpha)\cdot m_{t-1}
-\]
+$$
 
 ```{python}
 import numpy as np
