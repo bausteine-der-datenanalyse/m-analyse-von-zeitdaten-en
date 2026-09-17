@@ -9,7 +9,7 @@ Building Blocks of Computer-Based Data Analysis. "Time Series Analysis" by Lukas
 Simone Arnold, Florian Bagemihl, Matthias Baitsch, Marc Fehr, Maik Poetzsch, and 
 Sebastian Seipel is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.en). 
 The work is available at <https://github.com/bausteine-der-datenanalyse/m-analyse-von-zeitdaten-en>.
-Excluded from the license are all logos and other specially marked content. 2024
+Excluded from the license are all logos and other specially marked content. 2026
 
 :::
 
