@@ -151,9 +151,9 @@ plt.show()
 
 We use the Mean Absolute Error (MAE):
 
-\[
+$$
 MAE = \frac{1}{n} \sum |y_{true} - y_{pred}|
-\]
+$$
 
 ::: {.panel-tabset}
 
