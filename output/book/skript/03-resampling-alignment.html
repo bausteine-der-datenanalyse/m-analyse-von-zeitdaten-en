@@ -2,17 +2,23 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.31">
+<meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>3&nbsp; 3 Resampling &amp; Alignment – Time Series Analysis</title>
 <style>
-code{white-space: pre-wrap;}
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -74,10 +80,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-7e97565b392f382fb7bad5e5f7d3a376.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-3a79c8b4f024afbc6085355c069670f0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -133,7 +139,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
       <a href="../index.html" class="sidebar-logo-link">
-      <img src="../skript/00-bilder/logo_bcd_new.svg" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      <img src="../skript/00-bilder/logo_bcd_new.svg" alt="" class="sidebar-logo light-content py-0 d-lg-inline d-none">
+      <img src="../skript/00-bilder/logo_bcd_new.svg" alt="" class="sidebar-logo dark-content py-0 d-lg-inline d-none">
       </a>
     <div class="sidebar-title mb-0 py-0">
       <a href="../">Time Series Analysis</a> 
@@ -283,7 +290,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Note
+<span class="screen-reader-only">Note</span>Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -293,8 +300,8 @@ Note
 <hr>
 <section id="original-time-series-hourly" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="original-time-series-hourly"><span class="header-section-number">4.1</span> 3.1 Original Time Series (Hourly)</h2>
-<div id="fd6d8d72" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div id="23eef779" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -304,17 +311,11 @@ Note
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> pd.Series(<span class="dv">10</span> <span class="op">+</span> rng.normal(size<span class="op">=</span><span class="bu">len</span>(t)), index<span class="op">=</span>t, name<span class="op">=</span><span class="st">"signal"</span>)</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>y.plot(title<span class="op">=</span><span class="st">"Hourly Time Series"</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>C:\Users\User\AppData\Local\Temp\ipykernel_17708\1910220980.py:7: FutureWarning:
-
-'H' is deprecated and will be removed in a future version, please use 'h' instead.
-</code></pre>
-</div>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="03-resampling-alignment_files/figure-html/cell-2-output-2.png" width="566" height="461" class="figure-img"></p>
+<p><img src="03-resampling-alignment_files/figure-html/cell-2-output-1.png" width="566" height="466" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -324,19 +325,19 @@ Note
 <section id="downsampling-aggregation" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="downsampling-aggregation"><span class="header-section-number">4.2</span> 3.2 Downsampling (Aggregation)</h2>
 <p>We aggregate from hours to days.</p>
-<div id="1e2818f9" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>daily_mean <span class="op">=</span> y.resample(<span class="st">"D"</span>).mean()</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>daily_max <span class="op">=</span> y.resample(<span class="st">"D"</span>).<span class="bu">max</span>()</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> daily_mean.plot(marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"Daily Mean"</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>daily_max.plot(ax<span class="op">=</span>ax, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"Daily Maximum"</span>)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Downsampling: Hours → Days"</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="44d8f294" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>daily_mean <span class="op">=</span> y.resample(<span class="st">"D"</span>).mean()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>daily_max <span class="op">=</span> y.resample(<span class="st">"D"</span>).<span class="bu">max</span>()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> daily_mean.plot(marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"Daily Mean"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>daily_max.plot(ax<span class="op">=</span>ax, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"Daily Maximum"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Downsampling: Hours → Days"</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="03-resampling-alignment_files/figure-html/cell-3-output-1.png" width="587" height="461" class="figure-img"></p>
+<p><img src="03-resampling-alignment_files/figure-html/cell-3-output-1.png" width="588" height="466" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -348,7 +349,7 @@ Note
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Decision Guide
+<span class="screen-reader-only">Tip</span>Decision Guide
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -366,29 +367,19 @@ Decision Guide
 <section id="upsampling-interpolation" class="level2" data-number="4.3">
 <h2 data-number="4.3" class="anchored" data-anchor-id="upsampling-interpolation"><span class="header-section-number">4.3</span> 3.3 Upsampling (Interpolation)</h2>
 <p>We increase the temporal resolution.</p>
-<div id="a7819c43" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>y_2h <span class="op">=</span> y.resample(<span class="st">"2h"</span>).mean()</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>y_up <span class="op">=</span> y_2h.resample(<span class="st">"h"</span>).interpolate(<span class="st">"time"</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> y_2h.plot(marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"2H (aggregated)"</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>y_up.plot(ax<span class="op">=</span>ax, alpha<span class="op">=</span><span class="fl">0.7</span>, label<span class="op">=</span><span class="st">"Interpolated to 1H"</span>)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Upsampling with Interpolation"</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>C:\Users\User\AppData\Local\Temp\ipykernel_17708\2056401537.py:1: FutureWarning:
-
-'H' is deprecated and will be removed in a future version, please use 'h' instead.
-
-C:\Users\User\AppData\Local\Temp\ipykernel_17708\2056401537.py:2: FutureWarning:
-
-'H' is deprecated and will be removed in a future version, please use 'h' instead.
-</code></pre>
-</div>
+<div id="61541000" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>y_2h <span class="op">=</span> y.resample(<span class="st">"2h"</span>).mean()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>y_up <span class="op">=</span> y_2h.resample(<span class="st">"h"</span>).interpolate(<span class="st">"time"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>ax <span class="op">=</span> y_2h.plot(marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"2H (aggregated)"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>y_up.plot(ax<span class="op">=</span>ax, alpha<span class="op">=</span><span class="fl">0.7</span>, label<span class="op">=</span><span class="st">"Interpolated to 1H"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Upsampling with Interpolation"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="03-resampling-alignment_files/figure-html/cell-4-output-2.png" width="579" height="461" class="figure-img"></p>
+<p><img src="03-resampling-alignment_files/figure-html/cell-4-output-1.png" width="579" height="466" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -400,7 +391,7 @@ C:\Users\User\AppData\Local\Temp\ipykernel_17708\2056401537.py:2: FutureWarning:
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Warning
+<span class="screen-reader-only">Warning</span>Warning
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -412,34 +403,22 @@ Warning
 <section id="alignment-of-two-time-series" class="level2" data-number="4.4">
 <h2 data-number="4.4" class="anchored" data-anchor-id="alignment-of-two-time-series"><span class="header-section-number">4.4</span> 3.4 Alignment of Two Time Series</h2>
 <p>Two time series with different sampling rates:</p>
-<div id="faa3bf4c" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>t2 <span class="op">=</span> pd.date_range(<span class="st">"2025-01-01"</span>, periods<span class="op">=</span><span class="dv">24</span><span class="op">*</span><span class="dv">5</span>, freq<span class="op">=</span><span class="st">"2h"</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>y2 <span class="op">=</span> pd.Series(<span class="dv">5</span> <span class="op">+</span> rng.normal(size<span class="op">=</span><span class="bu">len</span>(t2)), index<span class="op">=</span>t2, name<span class="op">=</span><span class="st">"signal2"</span>)</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>C:\Users\User\AppData\Local\Temp\ipykernel_17708\3177252539.py:1: FutureWarning:
-
-'H' is deprecated and will be removed in a future version, please use 'h' instead.
-</code></pre>
-</div>
+<div id="a96bf69d" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>t2 <span class="op">=</span> pd.date_range(<span class="st">"2025-01-01"</span>, periods<span class="op">=</span><span class="dv">24</span><span class="op">*</span><span class="dv">5</span>, freq<span class="op">=</span><span class="st">"2h"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>y2 <span class="op">=</span> pd.Series(<span class="dv">5</span> <span class="op">+</span> rng.normal(size<span class="op">=</span><span class="bu">len</span>(t2)), index<span class="op">=</span>t2, name<span class="op">=</span><span class="st">"signal2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For joint analysis, both series must have the same frequency.</p>
-<div id="2a1acf9c" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>y2_aligned <span class="op">=</span> y2.resample(<span class="st">"h"</span>).interpolate(<span class="st">"time"</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.concat([y, y2_aligned], axis<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>df.plot(title<span class="op">=</span><span class="st">"Aligned Time Series"</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="In die Zwischenablage kopieren" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>C:\Users\User\AppData\Local\Temp\ipykernel_17708\1233815767.py:1: FutureWarning:
-
-'H' is deprecated and will be removed in a future version, please use 'h' instead.
-</code></pre>
-</div>
+<div id="43d86393" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>y2_aligned <span class="op">=</span> y2.resample(<span class="st">"h"</span>).interpolate(<span class="st">"time"</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.concat([y, y2_aligned], axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>df.plot(title<span class="op">=</span><span class="st">"Aligned Time Series"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="03-resampling-alignment_files/figure-html/cell-6-output-2.png" width="566" height="461" class="figure-img"></p>
+<p><img src="03-resampling-alignment_files/figure-html/cell-6-output-1.png" width="566" height="466" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -451,7 +430,7 @@ Warning
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Note
+<span class="screen-reader-only">Note</span>Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -512,12 +491,12 @@ Note
       // flash "checked"
       button.classList.add('code-copy-button-checked');
       var currentTitle = button.getAttribute("title");
-      button.setAttribute("title", "Kopiert");
+      button.setAttribute("title", "Copied!");
       let tooltip;
       if (window.bootstrap) {
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-placement", "left");
-        button.setAttribute("data-bs-title", "Kopiert");
+        button.setAttribute("data-bs-title", "Copied!");
         tooltip = new bootstrap.Tooltip(button, 
           { trigger: "manual", 
             customClass: "code-copy-button-tooltip",
@@ -538,13 +517,14 @@ Note
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
